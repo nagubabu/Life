@@ -2,5 +2,6 @@
     <string name="app_name">Life</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="welcome">Welcome to Life app!</string>
     <string name="action_settings">Settings</string>
 </resources>
