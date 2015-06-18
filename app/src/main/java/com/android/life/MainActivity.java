@@ -11,6 +11,7 @@ import android.widget.Button;
 
 public class MainActivity extends ActionBarActivity implements View.OnClickListener {
 
+    UserPreferenceManager userPrefs;
     Button btn_login;
 
     @Override
@@ -18,9 +19,14 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        userPrefs = new UserPreferenceManager(this);
+
+        checkLoginStatus();
+
         btn_login = (Button) findViewById(R.id.btn_login);
         btn_login.setOnClickListener(this);
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -50,5 +56,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         }
+    }
+
+    private void checkLoginStatus(){
+        userPrefs.checkLogin();
     }
 }

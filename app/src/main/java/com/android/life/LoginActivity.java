@@ -18,6 +18,9 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.life.Helpers.NetworkUtil;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -83,7 +86,15 @@ public class LoginActivity extends Activity{
         mProgressView = findViewById(R.id.login_progress);
     }
 
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(NetworkUtil.isConnected()){
+            Toast.makeText(this, "Connected to internet", Toast.LENGTH_SHORT).show();
+        }else{
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     /**
      * Attempts to sign in or register the account specified by the login form.
