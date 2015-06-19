@@ -37,6 +37,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
+
 
 /**
  * A login screen that offers login via email/password.
@@ -90,9 +93,11 @@ public class LoginActivity extends Activity{
     protected void onResume() {
         super.onResume();
         if(NetworkUtil.isConnected()){
-            Toast.makeText(this, "Connected to internet", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Connected to internet", Toast.LENGTH_SHORT).show();
+            Crouton.makeText(this, "Connected to internet", Style.CONFIRM).show();
         }else{
-            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+            Crouton.makeText(this, "No internet connection", Style.ALERT).show();
         }
     }
 

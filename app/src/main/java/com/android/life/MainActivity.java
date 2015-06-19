@@ -8,6 +8,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.android.life.Helpers.UserPreferenceManager;
+
 
 public class MainActivity extends ActionBarActivity implements View.OnClickListener {
 
