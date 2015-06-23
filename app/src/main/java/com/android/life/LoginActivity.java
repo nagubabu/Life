@@ -44,7 +44,7 @@ import de.keyboardsurfer.android.widget.crouton.Style;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends Activity{
+public class LoginActivity extends GlobalActivity {
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -87,18 +87,6 @@ public class LoginActivity extends Activity{
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if(NetworkUtil.isConnected()){
-            //Toast.makeText(this, "Connected to internet", Toast.LENGTH_SHORT).show();
-            Crouton.makeText(this, "Connected to internet", Style.CONFIRM).show();
-        }else{
-            //Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
-            Crouton.makeText(this, "No internet connection", Style.ALERT).show();
-        }
     }
 
     /**
@@ -152,11 +140,16 @@ public class LoginActivity extends Activity{
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true);
+            if (NetworkUtil.isConnected()) {
+                showProgress(true);
 
-            mAuthTask = new UserLoginTask(email, password);
-            Log.d("Action:", "Call to Async task");
-            mAuthTask.execute((Void) null);
+                mAuthTask = new UserLoginTask(email, password);
+                Log.d("Action:", "Call to Async task");
+                mAuthTask.execute((Void) null);
+            } else {
+                Log.d("Action:", "No internet connection");
+                Crouton.makeText(this, "No internet connection", Style.ALERT).show();
+            }
         }
     }
 
@@ -290,10 +283,10 @@ public class LoginActivity extends Activity{
 
     }
 
-    private void parseJson(String response){
+    private void parseJson(String response) {
         try {
             JSONObject resp = new JSONObject(response);
-            Log.d("Logger: Status-" , resp.getString("response"));
+            Log.d("Logger: Status-", resp.getString("response"));
             //Log.d("Logger: Status-" , resp.getString("status"));
             //Log.d("Logger: email-" , resp.getString("email"));
         } catch (Exception e) {

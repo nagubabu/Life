@@ -28,12 +28,6 @@
             android:name=".LoginActivity"
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible"></activity>
-
-        <receiver android:name=".Helpers.NetworkUpdateReceiver">
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>

@@ -1,20 +1,25 @@
 package com.android.life;
 
-import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
+
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.android.life.Helpers.UserPreferenceManager;
 
+import java.util.List;
 
-public class MainActivity extends ActionBarActivity implements View.OnClickListener {
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
+
+
+public class MainActivity extends GlobalActivity {
 
     UserPreferenceManager userPrefs;
-    Button btn_login;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,42 +30,37 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         checkLoginStatus();
 
-        btn_login = (Button) findViewById(R.id.btn_login);
-        btn_login.setOnClickListener(this);
+        populateListView();
+        registerClickCallback();
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onClick(View v) {
-        if(v == btn_login){
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-        }
-    }
-
-    private void checkLoginStatus(){
+    private void checkLoginStatus() {
         userPrefs.checkLogin();
     }
+
+    private void populateListView() {
+        // Create list items
+        String[] donors = {"Raja", "Nag", "Sudhakar", "Karthik", "Prathap", "Chandra", "Namrata", "Vinay", "Ganesh", "Paramesh", "Dileepan", "Mohith", "Sharma", "Shrikanth", "Ramesh", "Ramakrishna", "Raja", "Nag", "Sudhakar", "Karthik", "Prathap", "Chandra", "Namrata", "Vinay", "Ganesh", "Paramesh", "Dileepan", "Mohith", "Sharma", "Shrikanth", "Ramesh", "Ramakrishna"};
+
+        // Build adapter
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.list_item_donor, R.id.tv_donor, donors);
+
+        // Configure listview
+        ListView donorsList = (ListView) findViewById(R.id.lv_donors);
+        donorsList.setAdapter(adapter);
+    }
+
+    private void registerClickCallback() {
+        ListView donorsList = (ListView) findViewById(R.id.lv_donors);
+        donorsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View clickedItem, int position, long id) {
+                TextView dnrTv = (TextView) clickedItem.findViewById(R.id.tv_donor);
+                String donorName = dnrTv.getText().toString();
+                Crouton.makeText(MainActivity.this, "#" + position + " " + donorName, Style.INFO).show();
+            }
+        });
+    }
+
+
 }

@@ -15,10 +15,14 @@ public class NetworkUpdateReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         ConnectivityManager connectivityManager = (ConnectivityManager)
                 context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+        NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
+
         boolean isConnected = activeNetInfo != null && activeNetInfo.isConnectedOrConnecting();
-        if (isConnected)
-            Toast.makeText(context, "Connected to internet", Toast.LENGTH_SHORT).show();
-        else Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show();
+        if (isConnected) {
+            //Toast.makeText(context, "Connected to internet", Toast.LENGTH_SHORT).show();
+        }else {
+            //Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 }
