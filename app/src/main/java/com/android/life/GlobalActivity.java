@@ -1,6 +1,5 @@
 package com.android.life;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,7 +7,12 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.widget.Toast;
+import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+
+import com.android.life.Helpers.UserPreferenceManager;
 
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
@@ -16,8 +20,10 @@ import de.keyboardsurfer.android.widget.crouton.Style;
 /**
  * Created by Nag on 6/22/15.
  */
-public class GlobalActivity extends Activity {
+public class GlobalActivity extends ActionBarActivity {
+
     private BroadcastReceiver networkUpdateReceiver;
+    UserPreferenceManager userPreferenceManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,17 +43,50 @@ public class GlobalActivity extends Activity {
             }
         };
         super.onCreate(savedInstanceState);
+
+        userPreferenceManager = new UserPreferenceManager(this);
+    }
+
+    private void checkLoginStatus() {
+        userPreferenceManager.checkLogin();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                return true;
+            case R.id.action_logout:
+                appLogout();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void appLogout() {
+        userPreferenceManager.logoutUser();
     }
 
     @Override
     protected void onResume() {
         registerReceiver(networkUpdateReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
         super.onResume();
+        checkLoginStatus();
     }
 
     @Override
     protected void onDestroy() {
         unregisterReceiver(networkUpdateReceiver);
+        Crouton.cancelAllCroutons();
         super.onDestroy();
     }
 }

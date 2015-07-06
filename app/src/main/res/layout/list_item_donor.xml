@@ -6,17 +6,24 @@
 
     <TextView
         android:id="@+id/tv_donor"
-        android:layout_width="0"
+        android:layout_width="0dp"
+        android:gravity="left"
         android:layout_height="wrap_content"
         android:layout_weight="2"
-        android:padding="@dimen/padding_small"
-        android:text="Nag" />
+        android:padding="@dimen/padding_small" />
 
     <TextView
         android:id="@+id/tv_bgroup"
-        android:layout_width="0"
+        android:gravity="right"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:padding="@dimen/padding_small"
-        android:text="O+" />
+        android:padding="@dimen/padding_small" />
+
+    <TextView
+        android:id="@+id/tv_userId"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="invisible"/>
+
 </LinearLayout>

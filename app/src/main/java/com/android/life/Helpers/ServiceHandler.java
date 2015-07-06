@@ -1,5 +1,7 @@
 package com.android.life.Helpers;
 
+import android.util.Log;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -9,6 +11,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+
 import java.util.List;
 
 /**
@@ -25,19 +28,21 @@ public class ServiceHandler {
 
     /**
      * Making service call
+     *
      * @url - url to make request
      * @method - http request method
-     * */
+     */
     public String makeServiceCall(String url, int method) {
         return this.makeServiceCall(url, method, null);
     }
 
     /**
      * Making service call
+     *
      * @url - url to make request
      * @method - http request method
      * @params - http request params
-     * */
+     */
     public String makeServiceCall(String url, int method,
                                   List<NameValuePair> params) {
         try {
@@ -63,6 +68,7 @@ public class ServiceHandler {
                             .format(params, "utf-8");
                     url += "?" + paramString;
                 }
+                Log.d("Requested URL: ", url);
                 HttpGet httpGet = new HttpGet(url);
 
                 httpResponse = httpClient.execute(httpGet);

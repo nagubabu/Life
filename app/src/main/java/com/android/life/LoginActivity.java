@@ -4,8 +4,8 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -18,24 +18,17 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.life.Helpers.NetworkUtil;
+import com.android.life.Helpers.ServiceHandler;
+import com.android.life.Helpers.UserPreferenceManager;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
 
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
@@ -44,12 +37,13 @@ import de.keyboardsurfer.android.widget.crouton.Style;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends GlobalActivity {
+public class LoginActivity extends Activity {
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
+    private static String url = "http://medi.orgfree.com/signin.php";
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -57,10 +51,26 @@ public class LoginActivity extends GlobalActivity {
     private View mProgressView;
     private View mLoginFormView;
 
+    JSONObject loginResponse = null;
+    // JSON Node names
+    private static final String TAG_RESPONSE = "response";
+    private static final String TAG_STATUS = "status";
+    private static final String TAG_EMAIL = "email";
+    private static final String TAG_USERNAME = "name";
+
+    UserPreferenceManager userPrefs;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        userPrefs = new UserPreferenceManager(this);
+        if(userPrefs.isUserLoggedIn()){
+            Log.d("Login status: ", "User already logged in");
+            gotoHome();
+        }
         setContentView(R.layout.activity_login);
+
+
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -87,6 +97,17 @@ public class LoginActivity extends GlobalActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    private void gotoHome() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
     /**
@@ -218,79 +239,59 @@ public class LoginActivity extends GlobalActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
+            // Creating service handler class instance
+            ServiceHandler sh = new ServiceHandler();
+            ArrayList<NameValuePair> nameValuePair = new ArrayList<NameValuePair>();
+            nameValuePair.add(new BasicNameValuePair("email", mEmail));
+            nameValuePair.add(new BasicNameValuePair("passcode", mPassword));
+            String responeStatus = null;
+            String userName = null;
+            String userEmail = null;
+            // Making a request to url and getting response
+            String jsonStr = sh.makeServiceCall(LoginActivity.url, ServiceHandler.POST, nameValuePair);
+            Log.d("Login Response: ", "> " + jsonStr);
+            if (jsonStr != null) {
+                try {
+                    JSONObject jsonObj = new JSONObject(jsonStr);
 
-            Log.d("Logger:", "Call to getJson");
-            getJson("http://medi.orgfree.com/signin.php", mEmail, mPassword);
-            return true;
+                    // Getting JSON Array node
+                    loginResponse = jsonObj.getJSONObject(TAG_RESPONSE);
+                    responeStatus = loginResponse.getString(TAG_STATUS);
+                    userName = loginResponse.getString(TAG_USERNAME);
+                    userEmail = loginResponse.getString(TAG_EMAIL);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Log.e("ServiceHandler", "Couldn't get any data from the url");
+            }
+
+            if(responeStatus.equals("success")) {
+                userPrefs.createUserSession(userName, userEmail);
+                return true;
+            }else
+                return false;
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-            showProgress(false);
 
             if (success) {
+                gotoHome();
                 finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }
+            showProgress(false);
         }
 
         @Override
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
-        }
-    }
-
-    private void getJson(String url, String mEmail, String mPasword) {
-
-        HttpClient httpClient = new DefaultHttpClient();
-        HttpPost request = new HttpPost(url);
-        List<NameValuePair> postParams = new ArrayList<NameValuePair>();
-
-        postParams.add(new BasicNameValuePair("email", mEmail));
-        postParams.add(new BasicNameValuePair("passcode", mPasword));
-
-        StringBuffer stringBuffer = new StringBuffer("");
-        BufferedReader bufferedReader = null;
-        Log.d("Logger:", "getJson called");
-
-        try {
-            Log.d("Logger:", postParams.toString());
-            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParams);
-            request.setEntity(entity);
-            HttpResponse response = httpClient.execute(request);
-            Log.d("Logger:", "BufferedReader initiated.");
-            bufferedReader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line = "";
-            String lineSeparator = System.getProperty("line.separator");
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuffer.append(line + lineSeparator);
-            }
-            bufferedReader.close();
-            Log.d("Logger:", "Got response from web service");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            e.getMessage();
-        }
-
-        Log.d("Logger:", "Sever Resposne: " + stringBuffer.toString());
-
-        parseJson(stringBuffer.toString());
-
-    }
-
-    private void parseJson(String response) {
-        try {
-            JSONObject resp = new JSONObject(response);
-            Log.d("Logger: Status-", resp.getString("response"));
-            //Log.d("Logger: Status-" , resp.getString("status"));
-            //Log.d("Logger: email-" , resp.getString("email"));
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

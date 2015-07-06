@@ -4,29 +4,31 @@ package com.android.life;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.life.Helpers.User;
+import com.android.life.Helpers.UserDbManager;
+import com.android.life.Helpers.UsersAdapter;
+import com.android.life.Helpers.ServiceHandler;
 import com.android.life.Helpers.UserPreferenceManager;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
@@ -35,29 +37,18 @@ import de.keyboardsurfer.android.widget.crouton.Style;
 public class MainActivity extends GlobalActivity {
 
     UserPreferenceManager userPrefs;
+    UserDbManager userDbManager;
     private View mProgressView;
     // URL to get contacts JSON
-    private static String url = "http://medi.orgfree.com/donors.php";
+    private static String url = "http://medi.orgfree.com/members.php";
 
     // JSON Node names
-    private static final String TAG_CONTACTS = "contacts";
-    private static final String TAG_ID = "id";
-    private static final String TAG_NAME = "name";
-    private static final String TAG_EMAIL = "email";
-    private static final String TAG_ADDRESS = "address";
-    private static final String TAG_GENDER = "gender";
-    private static final String TAG_PHONE = "phone";
-    private static final String TAG_PHONE_MOBILE = "mobile";
-    private static final String TAG_PHONE_HOME = "home";
-    private static final String TAG_PHONE_OFFICE = "office";
+    private static final String TAG_RESPONSE = "response";
 
-    private GetDonorsTask getDonorsTask;
+    // donors JSONArray
+    JSONArray users = null;
 
-    // contacts JSONArray
-    JSONArray contacts = null;
-
-    // Hashmap for ListView
-    ArrayList<HashMap<String, String>> donorsList;
+    ArrayList<User> arrayOfUsers = new ArrayList<User>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,53 +57,19 @@ public class MainActivity extends GlobalActivity {
 
         userPrefs = new UserPreferenceManager(this);
         mProgressView = findViewById(R.id.login_progress);
-        donorsList = new ArrayList<HashMap<String, String>>();
-        //ListView lv = getListView();
-
-        checkLoginStatus();
 
         populateListView();
         registerClickCallback();
     }
 
-    private void checkLoginStatus() {
-        userPrefs.checkLogin();
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return super.onCreateOptionsMenu(menu);
     }
 
-    private void populateListView() {
-        showProgress(true);
-        getDonorsTask = new GetDonorsTask();
-        Log.d("Action:", "Call to Async task");
-        String url = "http://medi.orgfree.com/donors.php";
-        String response = null;
-        try {
-            response = getDonorsTask.execute(url).get();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Log.d("Logger: Donors- ", response);
-        String[] donors = {};
-        // Create list items
-        //String[] donors = {"Raja", "Nag", "Sudhakar", "Karthik", "Prathap", "Chandra", "Namrata", "Vinay", "Ganesh", "Paramesh", "Dileepan", "Mohith", "Sharma", "Shrikanth", "Ramesh", "Ramakrishna", "Raja", "Nag", "Sudhakar", "Karthik", "Prathap", "Chandra", "Namrata", "Vinay", "Ganesh", "Paramesh", "Dileepan", "Mohith", "Sharma", "Shrikanth", "Ramesh", "Ramakrishna"};
-
-        // Build adapter
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.list_item_donor, R.id.tv_donor, donors);
-
-        // Configure listview
-        ListView donorsList = (ListView) findViewById(R.id.lv_donors);
-        donorsList.setAdapter(adapter);
-    }
-
-    private void registerClickCallback() {
-        ListView donorsList = (ListView) findViewById(R.id.lv_donors);
-        donorsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View clickedItem, int position, long id) {
-                TextView dnrTv = (TextView) clickedItem.findViewById(R.id.tv_donor);
-                String donorName = dnrTv.getText().toString();
-                Crouton.makeText(MainActivity.this, "#" + position + " " + donorName, Style.INFO).show();
-            }
-        });
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -141,24 +98,98 @@ public class MainActivity extends GlobalActivity {
         }
     }
 
-    public class GetDonorsTask extends AsyncTask<String, String, String> {
+    private void populateListView() {
+        showProgress(true);
+        new GetUsersTask().execute();
+    }
+
+    private void registerClickCallback() {
+        ListView donorsList = (ListView) findViewById(R.id.lv_donors);
+        donorsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View clickedItem, int position, long id) {
+                TextView dnrTv = (TextView) clickedItem.findViewById(R.id.tv_donor);
+                TextView userIdTv = (TextView) clickedItem.findViewById(R.id.tv_userId);
+                //String userName = dnrTv.getText().toString();
+                String userId = userIdTv.getText().toString();
+                //Crouton.makeText(MainActivity.this, "#" + userId + " " + userName, Style.INFO).show();
+                Intent intent = new Intent(MainActivity.this,UserDetails.class);
+                intent.putExtra("USER_ID", userId);
+                startActivity(intent);
+            }
+        });
+    }
+
+    public class GetUsersTask extends AsyncTask<String, Void, Void> {
 
         @Override
-        protected String doInBackground(String... url) {
-            // TODO: attempt authentication against a network service.
-            String resp = getJson("http://medi.orgfree.com/donors.php");
-            return resp;
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showProgress(true);
         }
 
         @Override
-        protected void onPostExecute(String success) {
+        protected Void doInBackground(String... url) {
+            // Creating service handler class instance
+            ServiceHandler sh = new ServiceHandler();
+
+            // Making a request to url and getting response
+            String jsonStr = sh.makeServiceCall(MainActivity.url, ServiceHandler.GET);
+
+            //Log.d("Response: ", "> " + jsonStr);
+
+            if (jsonStr != null) {
+                try {
+                    JSONObject jsonObj = new JSONObject(jsonStr);
+
+                    // Getting JSON Array node
+                    users = jsonObj.getJSONArray(TAG_RESPONSE);
+                    userDbManager = new UserDbManager(getApplicationContext());
+
+                    // looping through response objects
+                    for(int i=0; i<users.length(); i++) {
+                        JSONObject c = users.getJSONObject(i);
+                        //Log.d("userId", c.getString("userId"));
+                        User newUser = new User(c);
+                        arrayOfUsers.add(newUser);
+                        userDbManager.addUser(newUser);
+                    }
+
+                    // Insert or update into DB table
+
+                    //userDbManager.addOrUpdateUser(users);
+
+                    // Reading all contacts
+                    Log.d("Reading: ", "Reading all contacts..");
+                    List<User> users = userDbManager.getAllUsers();
+
+                    for (User user : users) {
+                        String log = "Id: " + user.getID() + " ,Name: " + user.getName() + " ,Phone: " + user.getPhone();
+                        // Writing Contacts to log
+                        Log.d("Name: ", log);
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Log.e("ServiceHandler", "Couldn't get any data from the url");
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void success) {
             showProgress(false);
 
-            if (!success.equals("")) {
-                Crouton.makeText(MainActivity.this,"Server response success.",Style.CONFIRM).show();
-            } else {
-                Crouton.makeText(MainActivity.this,"Server response failed.",Style.ALERT).show();
-            }
+            ListView listView = (ListView) findViewById(R.id.lv_donors);
+
+            // Create the adapter to convert the array to views
+
+            UsersAdapter adapter = new UsersAdapter(getApplicationContext(), arrayOfUsers);
+
+            // Attach the adapter to a ListView
+            listView.setAdapter(adapter);
         }
 
         @Override
@@ -166,45 +197,4 @@ public class MainActivity extends GlobalActivity {
             showProgress(false);
         }
     }
-
-    private String getJson(String url) {
-
-        HttpClient httpClient = new DefaultHttpClient();
-        HttpPost request = new HttpPost(url);
-
-        StringBuffer stringBuffer = new StringBuffer("");
-        BufferedReader bufferedReader = null;
-
-        try {
-            HttpResponse response = httpClient.execute(request);
-            bufferedReader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line = "";
-            String lineSeparator = System.getProperty("line.separator");
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuffer.append(line + lineSeparator);
-            }
-            bufferedReader.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            e.getMessage();
-        }
-
-        //Log.d("Logger:", "Sever Resposne: " + stringBuffer.toString());
-
-        return stringBuffer.toString();
-
-    }
-
-    private String parseJson(String response) {
-        try {
-            JSONObject resp = new JSONObject(response);
-            //Log.d("Logger: Status-", resp.getString("response"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return response;
-    }
-
-
 }
