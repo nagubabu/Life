@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.life.Helpers.NetworkUtil;
 import com.android.life.Helpers.User;
 import com.android.life.Helpers.UserDbManager;
 import com.android.life.Helpers.UsersAdapter;
@@ -113,7 +114,7 @@ public class MainActivity extends GlobalActivity {
                 //String userName = dnrTv.getText().toString();
                 String userId = userIdTv.getText().toString();
                 //Crouton.makeText(MainActivity.this, "#" + userId + " " + userName, Style.INFO).show();
-                Intent intent = new Intent(MainActivity.this,UserDetails.class);
+                Intent intent = new Intent(MainActivity.this, UserDetails.class);
                 intent.putExtra("USER_ID", userId);
                 startActivity(intent);
             }
@@ -130,50 +131,54 @@ public class MainActivity extends GlobalActivity {
 
         @Override
         protected Void doInBackground(String... url) {
-            // Creating service handler class instance
-            ServiceHandler sh = new ServiceHandler();
+            userDbManager = new UserDbManager(getApplicationContext());
+            if (NetworkUtil.isConnected()) {
+                // Creating service handler class instance
+                ServiceHandler sh = new ServiceHandler();
+                // Making a request to url and getting response
+                String jsonStr = sh.makeServiceCall(MainActivity.url, ServiceHandler.GET);
+                //Log.d("Response: ", "> " + jsonStr);
+                if (jsonStr != null) {
+                    try {
+                        JSONObject jsonObj = new JSONObject(jsonStr);
+                        // Getting JSON Array node
+                        users = jsonObj.getJSONArray(TAG_RESPONSE);
 
-            // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall(MainActivity.url, ServiceHandler.GET);
+                        // looping through response objects
+                        for (int i = 0; i < users.length(); i++) {
+                            JSONObject c = users.getJSONObject(i);
+                            //Log.d("userId", c.getString("userId"));
+                            User newUser = new User(c);
+                            arrayOfUsers.add(newUser);
+                        }
 
-            //Log.d("Response: ", "> " + jsonStr);
+                        // Insert or update into DB table
+                        userDbManager.insertOrReplaceUser(users);
+                        Log.d("Reading: ", "Reading all contacts..");
+                        List<User> users = userDbManager.getAllUsers();
 
-            if (jsonStr != null) {
-                try {
-                    JSONObject jsonObj = new JSONObject(jsonStr);
+                        for (User user : users) {
+                            String log = "Id: " + user.getUserID() + " ,Name: " + user.getName() + " ,Phone: " + user.getPhone();
+                            // Writing Contacts to log
+                            Log.d("Name: ", log);
+                        }
 
-                    // Getting JSON Array node
-                    users = jsonObj.getJSONArray(TAG_RESPONSE);
-                    userDbManager = new UserDbManager(getApplicationContext());
-
-                    // looping through response objects
-                    for(int i=0; i<users.length(); i++) {
-                        JSONObject c = users.getJSONObject(i);
-                        //Log.d("userId", c.getString("userId"));
-                        User newUser = new User(c);
-                        arrayOfUsers.add(newUser);
-                        userDbManager.addUser(newUser);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+                } else {
+                    Log.e("ServiceHandler", "Couldn't get any data from the url");
 
-                    // Insert or update into DB table
-
-                    //userDbManager.addOrUpdateUser(users);
-
-                    // Reading all contacts
-                    Log.d("Reading: ", "Reading all contacts..");
-                    List<User> users = userDbManager.getAllUsers();
-
-                    for (User user : users) {
-                        String log = "Id: " + user.getID() + " ,Name: " + user.getName() + " ,Phone: " + user.getPhone();
-                        // Writing Contacts to log
-                        Log.d("Name: ", log);
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
             } else {
-                Log.e("ServiceHandler", "Couldn't get any data from the url");
+                // Reading all contacts
+                Log.d("Offline: ", "Reading all contacts..");
+                List<User> users = userDbManager.getAllUsers();
+
+                for (User user : users) {
+                    //Log.d("User => ", user.getName().toString());
+                    arrayOfUsers.add(user);
+                }
             }
             return null;
         }

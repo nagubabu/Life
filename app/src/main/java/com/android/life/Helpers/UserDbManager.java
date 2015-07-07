@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -31,6 +32,7 @@ public class UserDbManager extends SQLiteOpenHelper {
 
     // Contacts Table Columns names
     private static final String KEY_ID = "id";
+    private static final String KEY_USER_ID = "user_id";
     private static final String KEY_NAME = "name";
     private static final String KEY_EMAIL = "email";
     private static final String KEY_BLOOD_GROUP = "blood_group";
@@ -45,6 +47,7 @@ public class UserDbManager extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String CREATE_USERS_TABLE = "CREATE TABLE " + TABLE_USERS + "("
                 + KEY_ID + " INTEGER PRIMARY KEY,"
+                + KEY_USER_ID + " INTEGER,"
                 + KEY_NAME + " TEXT,"
                 + KEY_EMAIL + " TEXT,"
                 + KEY_BLOOD_GROUP + " TEXT,"
@@ -65,28 +68,14 @@ public class UserDbManager extends SQLiteOpenHelper {
     /**
      * All CRUD(Create, Read, Update, Delete) Operations
      */
-    public void addOrUpdateUser(JSONArray users){
-        for(int i=0; i<users.length(); i++) {
-            JSONObject c = null;
-            try {
-                c = users.getJSONObject(i);
-                User newUser = new User(c);
-                int id = newUser.getID();
-                if(id > 0){
-                    updateUser(newUser);
-                }else{
-                    addUser(newUser);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+
+
     // Adding new contact
     public void addUser(User user) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        values.put(KEY_USER_ID, user.user_id);
         values.put(KEY_NAME, user.name);
         values.put(KEY_EMAIL, user.email);
         values.put(KEY_BLOOD_GROUP, user.blood_group);
@@ -99,12 +88,12 @@ public class UserDbManager extends SQLiteOpenHelper {
     }
 
     // Getting single contact
-    User getUser(int id) {
+    User getUser(int user_id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(TABLE_USERS, new String[] { KEY_ID,
-                        KEY_NAME, KEY_EMAIL, KEY_BLOOD_GROUP, KEY_ADDRESS, KEY_PHONE }, KEY_ID + "=?",
-                new String[] { String.valueOf(id) }, null, null, null, null);
+        Cursor cursor = db.query(TABLE_USERS, new String[]{KEY_USER_ID,
+                        KEY_NAME, KEY_EMAIL, KEY_BLOOD_GROUP, KEY_ADDRESS, KEY_PHONE}, KEY_USER_ID + "=?",
+                new String[]{String.valueOf(user_id)}, null, null, null, null);
 
         if (cursor != null)
             cursor.moveToFirst();
@@ -128,12 +117,12 @@ public class UserDbManager extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 User user = new User();
-                user.setID(Integer.parseInt(cursor.getString(0)));
-                user.setName(cursor.getString(1));
-                user.setEmail(cursor.getString(2));
-                user.setBloodGroup(cursor.getString(3));
-                user.setAddress(cursor.getString(4));
-                user.setPhone(cursor.getString(5));
+                user.setUserID(Integer.parseInt(cursor.getString(1)));
+                user.setName(cursor.getString(2));
+                user.setEmail(cursor.getString(3));
+                user.setBloodGroup(cursor.getString(4));
+                user.setAddress(cursor.getString(5));
+                user.setPhone(cursor.getString(6));
                 // Adding user to list
                 userList.add(user);
             } while (cursor.moveToNext());
@@ -155,15 +144,15 @@ public class UserDbManager extends SQLiteOpenHelper {
         values.put(KEY_PHONE, user.getPhone());
 
         // updating row
-        return db.update(TABLE_USERS, values, KEY_ID + " = ?",
-                new String[] { String.valueOf(user.getID()) });
+        return db.update(TABLE_USERS, values, KEY_USER_ID + " = ?",
+                new String[]{String.valueOf(user.getUserID())});
     }
 
     // Deleting single contact
     public void deleteUser(User user) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_USERS, KEY_ID + " = ?",
-                new String[] { String.valueOf(user.getID()) });
+        db.delete(TABLE_USERS, KEY_USER_ID + " = ?",
+                new String[]{String.valueOf(user.getUserID())});
         db.close();
     }
 
@@ -177,5 +166,58 @@ public class UserDbManager extends SQLiteOpenHelper {
 
         // return count
         return cursor.getCount();
+    }
+
+    // deletes all records
+    public void deleteRecords() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("delete from " + TABLE_USERS);
+        db.close();
+    }
+
+    // insert data using transaction and prepared statement
+    public void insertOrReplaceUser(JSONArray users) {
+
+        // you can use INSERT only
+        String sql = "INSERT OR REPLACE INTO " + TABLE_USERS + " ( " + KEY_USER_ID + ", " + KEY_NAME + ", " + KEY_EMAIL + ", " + KEY_BLOOD_GROUP + ", " + KEY_ADDRESS + ", " + KEY_PHONE + " ) " +
+                "VALUES ( ?, ?, ?, ?, ?, ? )";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        /*
+         * According to the docs http://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html
+         * Writers should use beginTransactionNonExclusive() or beginTransactionWithListenerNonExclusive(SQLiteTransactionListener)
+         * to start a transaction. Non-exclusive mode allows database file to be in readable by other threads executing queries.
+         */
+        db.beginTransactionNonExclusive();
+        // db.beginTransaction();
+
+        SQLiteStatement stmt = db.compileStatement(sql);
+
+        for (int i = 0; i < users.length(); i++) {
+            JSONObject c = null;
+
+            try {
+                c = users.getJSONObject(i);
+                User newUser = new User(c);
+                int user_id = newUser.getUserID();
+
+                stmt.bindString(1, String.valueOf(newUser.getUserID()));
+                stmt.bindString(2, newUser.getName());
+                stmt.bindString(3, newUser.getEmail());
+                stmt.bindString(4, newUser.getBloodGroup());
+                stmt.bindString(5, newUser.getAddress());
+                stmt.bindString(6, newUser.getPhone());
+
+                stmt.execute();
+                stmt.clearBindings();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        db.setTransactionSuccessful();
+        db.endTransaction();
+
+        db.close();
     }
 }

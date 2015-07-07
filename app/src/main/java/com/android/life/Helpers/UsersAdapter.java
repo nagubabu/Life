@@ -53,7 +53,7 @@ public class UsersAdapter extends ArrayAdapter<User> {
         tvBloodGroup.setText(user.getBloodGroup());
         tvBloodGroup.setTextColor(Color.BLACK);
 
-        tvUserId.setText(String.valueOf(user.getID()));
+        tvUserId.setText(String.valueOf(user.getUserID()));
         tvUserId.setTextColor(Color.BLACK);
 
         // Return the completed view to render on screen

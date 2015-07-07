@@ -18,7 +18,7 @@ public class User {
 
     public String phone;
 
-    public int id;
+    public int user_id;
 
     public User(){
 
@@ -28,6 +28,9 @@ public class User {
     public User(JSONObject object) {
 
         try {
+            if (object.has("userId"))
+                this.user_id = object.getInt("userId");
+
             if (object.has("name"))
                 this.name = object.getString("name");
 
@@ -42,11 +45,6 @@ public class User {
 
             if (object.has("contact"))
                 this.phone = object.getString("contact");
-
-            if (object.has("userId"))
-                this.id = object.getInt("userId");
-
-
         } catch (JSONException e) {
 
             e.printStackTrace();
@@ -55,8 +53,8 @@ public class User {
 
     }
 
-    public User(int id, String name, String email, String blood_group, String address, String phone){
-        this.id = id;
+    public User(int user_id, String name, String email, String blood_group, String address, String phone){
+        this.user_id = user_id;
         this.name = name;
         this.email = email;
         this.blood_group = blood_group;
@@ -64,12 +62,12 @@ public class User {
         this.phone = phone;
     }
 
-    public void setID(int id){
-        this.id = id;
+    public void setUserID(int user_id){
+        this.user_id = user_id;
     }
 
-    public int getID(){
-        return this.id;
+    public int getUserID(){
+        return this.user_id;
     }
 
     public void setName(String name){
