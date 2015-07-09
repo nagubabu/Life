@@ -165,11 +165,9 @@ public class LoginActivity extends Activity {
                 showProgress(true);
 
                 mAuthTask = new UserLoginTask(email, password);
-                Log.d("Action:", "Call to Async task");
                 mAuthTask.execute((Void) null);
             } else {
-                Log.d("Action:", "No internet connection");
-                Crouton.makeText(this, "No internet connection", Style.ALERT).show();
+                Crouton.makeText(this, getResources().getString(R.string.no_internet), Style.ALERT).show();
             }
         }
     }
@@ -233,7 +231,6 @@ public class LoginActivity extends Activity {
         UserLoginTask(String email, String password) {
             mEmail = email;
             mPassword = password;
-            Log.d("Logger:", "Async task called");
         }
 
         @Override
@@ -249,7 +246,7 @@ public class LoginActivity extends Activity {
             String userEmail = null;
             // Making a request to url and getting response
             String jsonStr = sh.makeServiceCall(LoginActivity.url, ServiceHandler.POST, nameValuePair);
-            Log.d("Login Response: ", "> " + jsonStr);
+            //Log.d("Login Response: ", "> " + jsonStr);
             if (jsonStr != null) {
                 try {
                     JSONObject jsonObj = new JSONObject(jsonStr);

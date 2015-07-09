@@ -27,6 +27,7 @@ public class GlobalActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         networkUpdateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -39,16 +40,16 @@ public class GlobalActivity extends ActionBarActivity {
                 if (isConnected) {
                     //Crouton.makeText(GlobalActivity.this, "Connected to internet", Style.CONFIRM).show();
                 } else
-                    Crouton.makeText(GlobalActivity.this, "No internet connection", Style.ALERT).show();
+                    Crouton.makeText(GlobalActivity.this, getResources().getString(R.string.no_internet), Style.ALERT).show();
             }
         };
-        super.onCreate(savedInstanceState);
-
         userPreferenceManager = new UserPreferenceManager(this);
     }
 
     private void checkLoginStatus() {
-        userPreferenceManager.checkLogin();
+        if(userPreferenceManager.checkLogin()){
+            finish();
+        }
     }
 
     @Override

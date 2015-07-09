@@ -88,24 +88,47 @@ public class UserDbManager extends SQLiteOpenHelper {
     }
 
     // Getting single contact
-    User getUser(int user_id) {
+    public User getUser(int user_id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(TABLE_USERS, new String[]{KEY_USER_ID,
-                        KEY_NAME, KEY_EMAIL, KEY_BLOOD_GROUP, KEY_ADDRESS, KEY_PHONE}, KEY_USER_ID + "=?",
-                new String[]{String.valueOf(user_id)}, null, null, null, null);
+        //String selectQuery = "SELECT  * FROM " + TABLE_USERS + " WHERE " + KEY_USER_ID + " = " + user_id;
+
+        //Cursor cursor = db.rawQuery(selectQuery, null);
+
+        Cursor cursor = db.query(TABLE_USERS, null, KEY_USER_ID + "=?", new String[]{String.valueOf(user_id)}, null, null, null, null);
 
         if (cursor != null)
             cursor.moveToFirst();
+        /*
+        JSONObject userObject = new JSONObject();
+        try {
+            userObject.put("id", Integer.parseInt(cursor.getString(0)));
+            userObject.put("userId", Integer.parseInt(cursor.getString(1)));
+            userObject.put("name", cursor.getString(2));
+            userObject.put("email", cursor.getString(3));
+            userObject.put("bloodGroup", cursor.getString(4));
+            userObject.put("address", cursor.getString(5));
+            userObject.put("phone", cursor.getString(6));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.d("User object: ", userObject.toString());
+        */
+        User user = new User();
+        user.setUserID(Integer.parseInt(cursor.getString(1)));
+        user.setName(cursor.getString(2));
+        user.setEmail(cursor.getString(3));
+        user.setBloodGroup(cursor.getString(4));
+        user.setAddress(cursor.getString(5));
+        user.setPhone(cursor.getString(6));
 
-        User user = new User(Integer.parseInt(cursor.getString(0)),
-                cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getString(5));
-        // return contact
+        db.close();
+        // return user object
         return user;
     }
 
     // Getting All Users
-    public List<User> getAllUsers() {
+    public ArrayList<User> getAllUsers() {
         ArrayList<User> userList = new ArrayList<User>();
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_USERS;
@@ -127,7 +150,7 @@ public class UserDbManager extends SQLiteOpenHelper {
                 userList.add(user);
             } while (cursor.moveToNext());
         }
-
+        db.close();
         // return user list
         return userList;
     }
@@ -175,23 +198,12 @@ public class UserDbManager extends SQLiteOpenHelper {
         db.close();
     }
 
-    // insert data using transaction and prepared statement
-    public void insertOrReplaceUser(JSONArray users) {
 
-        // you can use INSERT only
-        String sql = "INSERT OR REPLACE INTO " + TABLE_USERS + " ( " + KEY_USER_ID + ", " + KEY_NAME + ", " + KEY_EMAIL + ", " + KEY_BLOOD_GROUP + ", " + KEY_ADDRESS + ", " + KEY_PHONE + " ) " +
-                "VALUES ( ?, ?, ?, ?, ?, ? )";
+    // insert data using transaction and prepared statement
+    public void addOrReplaceUser(JSONArray users) {
 
         SQLiteDatabase db = this.getWritableDatabase();
-        /*
-         * According to the docs http://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html
-         * Writers should use beginTransactionNonExclusive() or beginTransactionWithListenerNonExclusive(SQLiteTransactionListener)
-         * to start a transaction. Non-exclusive mode allows database file to be in readable by other threads executing queries.
-         */
-        db.beginTransactionNonExclusive();
-        // db.beginTransaction();
-
-        SQLiteStatement stmt = db.compileStatement(sql);
+        db.beginTransaction();
 
         for (int i = 0; i < users.length(); i++) {
             JSONObject c = null;
@@ -201,23 +213,24 @@ public class UserDbManager extends SQLiteOpenHelper {
                 User newUser = new User(c);
                 int user_id = newUser.getUserID();
 
-                stmt.bindString(1, String.valueOf(newUser.getUserID()));
-                stmt.bindString(2, newUser.getName());
-                stmt.bindString(3, newUser.getEmail());
-                stmt.bindString(4, newUser.getBloodGroup());
-                stmt.bindString(5, newUser.getAddress());
-                stmt.bindString(6, newUser.getPhone());
+                String sql = "INSERT OR REPLACE INTO " + TABLE_USERS + " ( " + KEY_USER_ID + ", " + KEY_NAME + ", " + KEY_EMAIL + ", " + KEY_BLOOD_GROUP + ", " + KEY_ADDRESS + ", " + KEY_PHONE + " ) " +
+                        "VALUES ( " +
+                        "COALESCE((select " + KEY_USER_ID + " from " + TABLE_USERS + " where " + KEY_USER_ID + " = "+user_id+"), "+user_id+"), " +
+                        "'" +newUser.getName() + "'," +
+                        "'" +newUser.getEmail() + "'," +
+                        "'" +newUser.getBloodGroup() + "'," +
+                        "'"+ newUser.getAddress() + "'," +
+                        "'"+ newUser.getPhone() + "'" +
+                        ")";
+                //Log.d("Query", sql);
+                db.execSQL(sql);
 
-                stmt.execute();
-                stmt.clearBindings();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-
         db.setTransactionSuccessful();
         db.endTransaction();
-
         db.close();
     }
 }

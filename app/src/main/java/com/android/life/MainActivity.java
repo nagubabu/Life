@@ -28,28 +28,23 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
-
 
 public class MainActivity extends GlobalActivity {
 
     UserPreferenceManager userPrefs;
     UserDbManager userDbManager;
     private View mProgressView;
+
+    JSONArray users = null;
+    ArrayList<User> usersList = new ArrayList<User>();
+
     // URL to get contacts JSON
     private static String url = "http://medi.orgfree.com/members.php";
-
     // JSON Node names
     private static final String TAG_RESPONSE = "response";
-
-    // donors JSONArray
-    JSONArray users = null;
-
-    ArrayList<User> arrayOfUsers = new ArrayList<User>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +53,9 @@ public class MainActivity extends GlobalActivity {
 
         userPrefs = new UserPreferenceManager(this);
         mProgressView = findViewById(R.id.login_progress);
+
+        userDbManager = new UserDbManager(getApplicationContext());
+        usersList = userDbManager.getAllUsers();
 
         populateListView();
         registerClickCallback();
@@ -101,6 +99,7 @@ public class MainActivity extends GlobalActivity {
 
     private void populateListView() {
         showProgress(true);
+        displayTheList(usersList);
         new GetUsersTask().execute();
     }
 
@@ -121,17 +120,13 @@ public class MainActivity extends GlobalActivity {
         });
     }
 
-    public class GetUsersTask extends AsyncTask<String, Void, Void> {
+    public class GetUsersTask extends AsyncTask<String, Void, String> {
+
+        String $error;
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            showProgress(true);
-        }
-
-        @Override
-        protected Void doInBackground(String... url) {
-            userDbManager = new UserDbManager(getApplicationContext());
+        protected String doInBackground(String... url) {
+            usersList = new ArrayList<User>();
             if (NetworkUtil.isConnected()) {
                 // Creating service handler class instance
                 ServiceHandler sh = new ServiceHandler();
@@ -149,57 +144,49 @@ public class MainActivity extends GlobalActivity {
                             JSONObject c = users.getJSONObject(i);
                             //Log.d("userId", c.getString("userId"));
                             User newUser = new User(c);
-                            arrayOfUsers.add(newUser);
+                            usersList.add(newUser);
                         }
 
                         // Insert or update into DB table
-                        userDbManager.insertOrReplaceUser(users);
-                        Log.d("Reading: ", "Reading all contacts..");
-                        List<User> users = userDbManager.getAllUsers();
-
-                        for (User user : users) {
-                            String log = "Id: " + user.getUserID() + " ,Name: " + user.getName() + " ,Phone: " + user.getPhone();
-                            // Writing Contacts to log
-                            Log.d("Name: ", log);
-                        }
+                        userDbManager.addOrReplaceUser(users);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
+                        $error = e.getMessage();
                     }
-                } else {
-                    Log.e("ServiceHandler", "Couldn't get any data from the url");
-
-                }
-            } else {
-                // Reading all contacts
-                Log.d("Offline: ", "Reading all contacts..");
-                List<User> users = userDbManager.getAllUsers();
-
-                for (User user : users) {
-                    //Log.d("User => ", user.getName().toString());
-                    arrayOfUsers.add(user);
                 }
             }
-            return null;
+            if($error != null  && !$error.isEmpty())
+                return $error;
+            else if (usersList.isEmpty())
+                return getResources().getString(R.string.no_data_from_server);
+            else
+                return getResources().getString(R.string.success);
         }
 
         @Override
-        protected void onPostExecute(Void success) {
-            showProgress(false);
-
-            ListView listView = (ListView) findViewById(R.id.lv_donors);
-
-            // Create the adapter to convert the array to views
-
-            UsersAdapter adapter = new UsersAdapter(getApplicationContext(), arrayOfUsers);
-
-            // Attach the adapter to a ListView
-            listView.setAdapter(adapter);
+        protected void onPostExecute(String success) {
+            if (success.equals(getResources().getString(R.string.success))) {
+                displayTheList(usersList);
+            } else Crouton.makeText(MainActivity.this, success, Style.ALERT).show();
         }
 
         @Override
         protected void onCancelled() {
             showProgress(false);
         }
+    }
+
+    private void displayTheList(ArrayList usersList) {
+
+        ListView listView = (ListView) findViewById(R.id.lv_donors);
+
+        // Create the adapter to convert the array to views
+        UsersAdapter adapter = new UsersAdapter(getApplicationContext(), usersList);
+
+        // Attach the adapter to a ListView
+        listView.setAdapter(adapter);
+
+        showProgress(false);
     }
 }
