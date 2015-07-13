@@ -2,11 +2,15 @@ package com.android.life;
 
 import android.content.Context;
 
+import org.apache.http.impl.client.DefaultHttpClient;
+
 /**
- * Created by mokriya on 6/18/15.
+ * Created by Nag on 6/18/15.
  */
 public class Application extends android.app.Application {
     private static Application instance;
+    // http client
+    public static DefaultHttpClient httpClient = new DefaultHttpClient();
 
     @Override
     public void onCreate() {

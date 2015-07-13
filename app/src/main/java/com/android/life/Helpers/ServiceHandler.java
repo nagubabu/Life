@@ -2,6 +2,8 @@ package com.android.life.Helpers;
 
 import android.util.Log;
 
+import com.android.life.Application;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -47,7 +49,7 @@ public class ServiceHandler {
                                   List<NameValuePair> params) {
         try {
             // http client
-            DefaultHttpClient httpClient = new DefaultHttpClient();
+            DefaultHttpClient httpClient = Application.httpClient;
             HttpEntity httpEntity = null;
             HttpResponse httpResponse = null;
 
