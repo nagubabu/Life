@@ -74,7 +74,8 @@ public class GlobalActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.action_settings:
+            case R.id.action_profile:
+                gotoProfileFrag();
                 return true;
             case R.id.action_logout:
                 appLogout();
@@ -82,6 +83,12 @@ public class GlobalActivity extends ActionBarActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void gotoProfileFrag() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.putExtra("showFragment","Profile");
+        startActivity(intent);
     }
 
     private void appLogout() {

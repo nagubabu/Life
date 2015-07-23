@@ -15,7 +15,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.android.life.Helpers.NetworkUtil;
+import com.android.life.utils.NetworkUtil;
 import com.android.life.Helpers.User;
 import com.android.life.Helpers.UserDbManager;
 import com.android.life.Helpers.UsersAdapter;

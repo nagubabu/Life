@@ -11,35 +11,49 @@ import android.widget.Toast;
 
 import com.android.life.Helpers.UserPreferenceManager;
 import com.android.life.fragments.LoginFragment;
+import com.android.life.fragments.ProfileFragment;
 import com.android.life.fragments.RegisterFragment;
 
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends Activity implements LoginFragment.Listener, RegisterFragment.Listener {
+public class LoginActivity extends Activity implements LoginFragment.Listener, RegisterFragment.Listener, ProfileFragment.Listener {
 
     UserPreferenceManager userPrefs;
     LoginFragment loginFragment;
     RegisterFragment registerFragment;
+    ProfileFragment profileFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        String fragmentToShow = "Login";
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            fragmentToShow = extras.getString("showFragment", "");
+        }
+
         userPrefs = new UserPreferenceManager(this);
-        if (userPrefs.isUserLoggedIn()) {
+        if (userPrefs.isUserLoggedIn() && extras == null) {
             Log.d("Login status: ", "User already logged in");
             gotoHome();
         }
+
         setContentView(R.layout.activity_login);
 
         loginFragment = new LoginFragment();
         registerFragment = new RegisterFragment();
+        profileFragment = new ProfileFragment();
 
         // Add new fragment, loginFragment for the first time
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.fragment_holder, loginFragment);
-        fragmentTransaction.commit();
+
+        if (fragmentToShow.equals("Profile")) {
+            addFragment(profileFragment);
+        } else {
+            addFragment(loginFragment);
+        }
+
     }
 
     private void gotoHome() {
@@ -54,7 +68,11 @@ public class LoginActivity extends Activity implements LoginFragment.Listener, R
         replaceFragment(registerFragment);
     }
 
-
+    private void addFragment(Fragment fragment){
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.fragment_holder, fragment);
+        fragmentTransaction.commit();
+    }
     private void replaceFragment(Fragment fragment) {
         /*
         String backStateName = fragment.getClass().getName();
@@ -78,6 +96,11 @@ public class LoginActivity extends Activity implements LoginFragment.Listener, R
         } else {
             Toast.makeText(getApplicationContext(), fragmentTag + " is already in backstack", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void gotoLoginFrag() {
+        replaceFragment(loginFragment);
     }
 }
 

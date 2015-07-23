@@ -15,7 +15,17 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:orientation="vertical">
+
+            <TextView
+                android:layout_marginBottom="@dimen/margin_large"
+                android:layout_width="match_parent"
+                android:textSize="@dimen/font_large"
+                android:textColor="@android:color/holo_blue_light"
+                android:layout_height="wrap_content"
+                android:text="@string/account_details"/>
 
             <EditText
                 android:id="@+id/et_name"
@@ -26,45 +36,7 @@
                 android:inputType="textCapSentences"
                 android:maxLines="1"
                 android:nextFocusDown="@+id/email"
-                android:textCursorDrawable="@null">
-                <requestFocus />
-            </EditText>
-
-            <AutoCompleteTextView
-                android:id="@+id/email"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/prompt_email"
-                android:imeOptions="actionNext"
-                android:inputType="textEmailAddress"
-                android:maxLines="1"
-                android:nextFocusDown="@+id/password"
-                android:singleLine="true"
-                android:textCursorDrawable="@null" />
-
-            <EditText
-                android:id="@+id/et_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/prompt_password"
-                android:imeOptions="actionNext"
-                android:inputType="textPassword"
-                android:maxLines="1"
-                android:nextFocusDown="@+id/password_confirm"
-                android:singleLine="true"
-                android:textCursorDrawable="@null" />
-
-            <EditText
-                android:id="@+id/et_password_confirm"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/prompt_confirm_password"
-                android:imeOptions="actionNext"
-                android:inputType="textPassword"
-                android:maxLines="1"
-                android:nextFocusDown="@+id/sp_blood_group"
-                android:singleLine="true"
-                android:textCursorDrawable="@null" />
+                android:textCursorDrawable="@null"/>
 
             <Spinner
                 android:id="@+id/sp_blood_group"
@@ -96,13 +68,47 @@
                 android:maxLines="1"
                 android:textCursorDrawable="@null" />
 
+            <TextView
+                android:layout_marginTop="@dimen/margin_large"
+                android:layout_marginBottom="@dimen/margin_large"
+                android:layout_width="match_parent"
+                android:textSize="@dimen/font_large"
+                android:textColor="@android:color/holo_blue_light"
+                android:layout_height="wrap_content"
+                android:text="@string/change_password"/>
+
+            <EditText
+                android:id="@+id/et_old_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/old_password"
+                android:imeOptions="actionNext"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:nextFocusDown="@+id/et_new_password"
+                android:singleLine="true"
+                android:textCursorDrawable="@null" />
+
+            <EditText
+                android:id="@+id/et_new_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/new_password"
+                android:imeOptions="actionNext"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:nextFocusDown="@+id/sp_blood_group"
+                android:singleLine="true"
+                android:textCursorDrawable="@null" />
+
             <Button
-                android:id="@+id/btn_register"
+                android:id="@+id/btn_update"
                 style="?android:textAppearanceSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/action_sign_up_short"
+                android:layout_marginTop="@dimen/margin_large"
+                android:textSize="@dimen/font_medium"
+                android:text="@string/action_update_profile"
                 android:textStyle="bold" />
 
         </LinearLayout>

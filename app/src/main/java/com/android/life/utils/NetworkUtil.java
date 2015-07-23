@@ -1,4 +1,4 @@
-package com.android.life.Helpers;
+package com.android.life.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

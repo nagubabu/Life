@@ -6,7 +6,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -19,7 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.android.life.Helpers.NetworkUtil;
+import com.android.life.utils.NetworkUtil;
 import com.android.life.Helpers.ServiceHandler;
 import com.android.life.Helpers.UserPreferenceManager;
 import com.android.life.MainActivity;
@@ -60,8 +59,12 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     // JSON Node names
     private static final String TAG_RESPONSE = "response";
     private static final String TAG_STATUS = "status";
+    private static final String TAG_USER_ID = "userId";
     private static final String TAG_EMAIL = "email";
     private static final String TAG_USERNAME = "name";
+    private static final String TAG_BLOOD_GROUP = "bloodGroup";
+    private static final String TAG_ADDRESS = "address";
+    private static final String TAG_PHONE = "contact";
 
     public interface Listener {
         public void gotoRegisterFrag();
@@ -85,7 +88,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         initViews();
     }
@@ -167,10 +170,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
-        }
-
-        // Check for a valid password, if the user entered one.
-        if (TextUtils.isEmpty(password)) {
+        }else if (TextUtils.isEmpty(password)) { // Check for a valid password, if the user entered one.
             mPasswordView.setError(getString(R.string.error_field_required));
             focusView = mPasswordView;
             cancel = true;
@@ -224,18 +224,23 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
+            int userId = 0;
+            String responeStatus = null;
+            String userName = null;
+            String userEmail = null;
+            String userBloodGroup = null;
+            String userAddress = null;
+            String userContact = null;
+
             // Creating service handler class instance
             ServiceHandler sh = new ServiceHandler();
             ArrayList<NameValuePair> nameValuePair = new ArrayList<NameValuePair>();
             nameValuePair.add(new BasicNameValuePair("email", mEmail));
             nameValuePair.add(new BasicNameValuePair("passcode", mPassword));
-            String responeStatus = null;
-            String userName = null;
-            String userEmail = null;
+
             // Making a request to url and getting response
             String jsonStr = sh.makeServiceCall(LoginFragment.url, ServiceHandler.POST, nameValuePair);
-            //Log.d("Login Response: ", "> " + jsonStr);
+            Log.d("Login Response: ", "> " + jsonStr);
             if (jsonStr != null) {
                 try {
                     JSONObject jsonObj = new JSONObject(jsonStr);
@@ -243,8 +248,12 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                     // Getting JSON Array node
                     loginResponse = jsonObj.getJSONObject(TAG_RESPONSE);
                     responeStatus = loginResponse.getString(TAG_STATUS);
+                    userId = loginResponse.getInt(TAG_USER_ID);
                     userName = loginResponse.getString(TAG_USERNAME);
                     userEmail = loginResponse.getString(TAG_EMAIL);
+                    userBloodGroup = loginResponse.getString(TAG_BLOOD_GROUP);
+                    userAddress = loginResponse.getString(TAG_ADDRESS);
+                    userContact = loginResponse.getString(TAG_PHONE);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -254,7 +263,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
             }
 
             if (responeStatus.equals("success")) {
-                userPrefs.createUserSession(userName, userEmail);
+                userPrefs.createUserSession(userId, userName, userEmail, userBloodGroup, userAddress, userContact);
                 return true;
             } else
                 return false;

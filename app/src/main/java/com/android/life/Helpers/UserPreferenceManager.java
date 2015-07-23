@@ -30,11 +30,12 @@ public class UserPreferenceManager {
     // All Shared Preferences Keys
     private static final String IS_USER_LOGIN = "IsUserLoggedIn";
 
-    // Username (make variable public to access from outside)
-    public static final String KEY_NAME = "username";
-
-    // Email address (make variable public to access from outside)
-    public static final String KEY_EMAIL = "useremail";
+    public static final String KEY_USER_ID = "userID";
+    public static final String KEY_NAME = "userName";
+    public static final String KEY_EMAIL = "userEmail";
+    public static final String KEY_BLOOD_GROUP = "userBloodGroup";
+    public static final String KEY_ADDRESS = "userAddress";
+    public static final String KEY_PHONE = "userPhone";
 
     public UserPreferenceManager(Context context){
         this._context = context;
@@ -43,15 +44,15 @@ public class UserPreferenceManager {
     }
 
     //Create login session
-    public void createUserSession(String name, String email){
+    public void createUserSession(int id, String name, String email, String bloodGroup, String address, String phone){
         // Storing login value as TRUE
         editor.putBoolean(IS_USER_LOGIN, true);
-
-        // Storing name in pref
+        editor.putInt(KEY_USER_ID, id);
         editor.putString(KEY_NAME, name);
-
-        // Storing email in pref
         editor.putString(KEY_EMAIL, email);
+        editor.putString(KEY_BLOOD_GROUP, bloodGroup);
+        editor.putString(KEY_ADDRESS, address);
+        editor.putString(KEY_PHONE, phone);
 
         // commit changes
         editor.commit();
@@ -88,19 +89,23 @@ public class UserPreferenceManager {
     /**
      * Get stored session data
      * */
-    public HashMap<String, String> getUserDetails(){
+    public User getUserDetails(){
 
-        //Use hashmap to store user credentials
-        HashMap<String, String> user = new HashMap<String, String>();
-
-        // user name
-        user.put(KEY_NAME, pref.getString(KEY_NAME, null));
-
-        // user email id
-        user.put(KEY_EMAIL, pref.getString(KEY_EMAIL, null));
+        //Use User class object to store user credentials
+        User user = new User();
+        user.setUserID(pref.getInt(KEY_USER_ID, 0));
+        user.setName(pref.getString(KEY_NAME, null));
+        user.setEmail(pref.getString(KEY_EMAIL, null));
+        user.setBloodGroup(pref.getString(KEY_BLOOD_GROUP, null));
+        user.setAddress(pref.getString(KEY_ADDRESS, null));
+        user.setPhone(pref.getString(KEY_PHONE, null));
 
         // return user
         return user;
+    }
+
+    public int getUserId(){
+        return pref.getInt(KEY_USER_ID, 0);
     }
 
     /**

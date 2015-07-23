@@ -22,7 +22,7 @@
         android:maxLines="1"
         android:nextFocusDown="@+id/password"
         android:singleLine="true"
-        android:text="nag@in.com" />
+        android:textCursorDrawable="@null" />
 
     <EditText
         android:id="@+id/password"
@@ -35,7 +35,7 @@
         android:inputType="textPassword"
         android:maxLines="1"
         android:singleLine="true"
-        android:text="123456" />
+        android:textCursorDrawable="@null" />
 
     <Button
         android:id="@+id/btn_login"
