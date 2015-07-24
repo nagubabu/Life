@@ -8,17 +8,17 @@ import org.json.JSONObject;
  */
 public class User {
 
-    public String name;
-
-    public String email;
-
-    public String blood_group;
-
-    public String address;
-
-    public String phone;
-
     public int user_id;
+    public String name;
+    public String email;
+    public String blood_group;
+    public String address;
+    public String phone;
+    public String status;
+    public String created;
+    public String updated;
+
+
 
     public User(){
 
@@ -45,6 +45,16 @@ public class User {
 
             if (object.has("contact"))
                 this.phone = object.getString("contact");
+
+            if (object.has("status"))
+                this.status = object.getString("status");
+
+            if (object.has("created"))
+                this.created = object.getString("created");
+
+            if (object.has("updated"))
+                this.updated = object.getString("updated");
+
         } catch (JSONException e) {
 
             e.printStackTrace();
@@ -53,13 +63,16 @@ public class User {
 
     }
 
-    public User(int user_id, String name, String email, String blood_group, String address, String phone){
+    public User(int user_id, String name, String email, String blood_group, String address, String phone, String status, String created, String updated){
         this.user_id = user_id;
         this.name = name;
         this.email = email;
         this.blood_group = blood_group;
         this.address = address;
         this.phone = phone;
+        this.status = status;
+        this.created = created;
+        this.updated = updated;
     }
 
     public void setUserID(int user_id){
@@ -108,6 +121,29 @@ public class User {
 
     public String getPhone(){
         return this.phone;
+    }
+
+    public void setStatus(String status){
+        this.status = status;
+    }
+
+    public String getStatus(){
+        return this.status;
+    }
+
+    public void setCreated(String created){
+        this.created = created;
+    }
+
+    public String getCreated(){
+        return this.created;
+    }
+    public void setUpdated(String updated){
+        this.updated = updated;
+    }
+
+    public String getUpdated(){
+        return this.updated;
     }
 
 

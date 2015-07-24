@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +23,8 @@ import com.android.life.Helpers.UsersAdapter;
 import com.android.life.Helpers.ServiceHandler;
 import com.android.life.Helpers.UserPreferenceManager;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,11 +40,8 @@ public class MainActivity extends GlobalActivity {
     UserDbManager userDbManager;
     private View mProgressView;
 
-    JSONArray users = null;
-    ArrayList<User> usersList = new ArrayList<User>();
-
     // URL to get contacts JSON
-    private static String url = "http://medi.orgfree.com/members.php";
+    private static String url = "http://medi.orgfree.com/getUsers.php";
     // JSON Node names
     private static final String TAG_RESPONSE = "response";
 
@@ -54,7 +54,6 @@ public class MainActivity extends GlobalActivity {
         mProgressView = findViewById(R.id.login_progress);
 
         userDbManager = new UserDbManager(getApplicationContext());
-        usersList = userDbManager.getAllUsers();
 
         populateListView();
         registerClickCallback();
@@ -98,7 +97,7 @@ public class MainActivity extends GlobalActivity {
 
     private void populateListView() {
         showProgress(true);
-        displayTheList(usersList);
+        displayTheList();
         new GetUsersTask().execute();
     }
 
@@ -125,48 +124,103 @@ public class MainActivity extends GlobalActivity {
 
         @Override
         protected String doInBackground(String... url) {
-            usersList = new ArrayList<User>();
+            ArrayList<User> usersList = new ArrayList<User>();
             if (NetworkUtil.isConnected()) {
+
                 // Creating service handler class instance
                 ServiceHandler sh = new ServiceHandler();
-                // Making a request to url and getting response
-                String jsonStr = sh.makeServiceCall(MainActivity.url, ServiceHandler.GET);
-                //Log.d("Response: ", "> " + jsonStr);
-                if (jsonStr != null) {
-                    try {
-                        JSONObject jsonObj = new JSONObject(jsonStr);
-                        // Getting JSON Array node
-                        users = jsonObj.getJSONArray(TAG_RESPONSE);
+                JSONArray users = null;
 
-                        // looping through response objects
-                        for (int i = 0; i < users.length(); i++) {
-                            JSONObject c = users.getJSONObject(i);
-                            //Log.d("userId", c.getString("userId"));
-                            User newUser = new User(c);
-                            usersList.add(newUser);
+                String latestCreatedDate = userDbManager.getLatestCreatedDate();
+                if(latestCreatedDate!=null) {
+                    // Creating service handler class instance
+                    ArrayList<NameValuePair> nameValuePair = new ArrayList<NameValuePair>();
+                    nameValuePair.add(new BasicNameValuePair("createdDate", latestCreatedDate));
+                    nameValuePair.add(new BasicNameValuePair("tag", "created"));
+
+                    // Making a request to url and getting response
+                    String latestNewUsersJsonStr = sh.makeServiceCall(MainActivity.url, ServiceHandler.GET, nameValuePair);
+                    Log.d("Response: ", "> " + latestNewUsersJsonStr);
+                    if (latestNewUsersJsonStr != null) {
+                        try {
+                            JSONObject jsonObj = new JSONObject(latestNewUsersJsonStr);
+                            // Getting JSON Array node
+                            users = jsonObj.getJSONArray(TAG_RESPONSE);
+                            Log.d("Action-Object Length: ", String.valueOf(users.length()));
+                            // looping through response objects
+                            for (int i = 0; i < users.length(); i++) {
+                                JSONObject c = users.getJSONObject(i);
+                                //Log.d("userId", c.getString("userId"));
+                                User newUser = new User(c);
+                                usersList.add(newUser);
+                            }
+
+                            // Insert into DB table
+                            userDbManager.insertUsers(users);
+
+                            Log.d("Action-Users count: ", String.valueOf(userDbManager.getUsersCount()));
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            $error = e.getMessage();
+                            //Log.d("Error-c: ", $error);
                         }
+                    }
+                }
 
-                        // Insert or update into DB table
-                        userDbManager.addOrReplaceUser(users);
+                String latestUpdatedDate = userDbManager.getLatestUpdatedDate();
+                if(latestUpdatedDate!=null) {
+                    usersList = new ArrayList<User>();
+                    // Creating service handler class instance
+                    ArrayList<NameValuePair> nameValuePair = new ArrayList<NameValuePair>();
+                    nameValuePair.add(new BasicNameValuePair("updatedDate", latestUpdatedDate));
+                    nameValuePair.add(new BasicNameValuePair("tag", "updated"));
 
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        $error = e.getMessage();
+                    // Making a request to url and getting response
+                    String latestUpdatedUsersJsonStr = sh.makeServiceCall(MainActivity.url, ServiceHandler.GET, nameValuePair);
+                    //Log.d("Response: ", "> " + jsonStr);
+                    if (latestUpdatedUsersJsonStr != null) {
+                        try {
+                            JSONObject jsonObj = new JSONObject(latestUpdatedUsersJsonStr);
+                            // Getting JSON Array node
+                            users = jsonObj.getJSONArray(TAG_RESPONSE);
+                            Log.d("Action-Object Length: ", String.valueOf(users.length()));
+                            // looping through response objects
+                            for (int i = 0; i < users.length(); i++) {
+                                JSONObject c = users.getJSONObject(i);
+                                //Log.d("userId", c.getString("userId"));
+                                User newUser = new User(c);
+                                usersList.add(newUser);
+                            }
+
+                            // Insert into DB table
+                            userDbManager.updateUsers(users);
+
+                            Log.d("Action-Users count: ", String.valueOf(userDbManager.getUsersCount()));
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            $error = e.getMessage();
+                            //Log.d("Error-u: ", $error);
+                        }
                     }
                 }
             }
-            if($error != null  && !$error.isEmpty())
+
+            if($error != null  && !$error.isEmpty()) {
                 return $error;
-            else if (usersList.isEmpty())
+            }else if (usersList.isEmpty()) {
                 return getResources().getString(R.string.no_data_from_server);
-            else
+                //return "False";
+            }else {
                 return getResources().getString(R.string.success);
+            }
         }
 
         @Override
         protected void onPostExecute(String success) {
             if (success.equals(getResources().getString(R.string.success))) {
-                displayTheList(usersList);
+                displayTheList();
             } else Crouton.makeText(MainActivity.this, success, Style.ALERT).show();
         }
 
@@ -176,7 +230,9 @@ public class MainActivity extends GlobalActivity {
         }
     }
 
-    private void displayTheList(ArrayList usersList) {
+    private void displayTheList() {
+
+        ArrayList<User> usersList = userDbManager.getAllUsers();
 
         ListView listView = (ListView) findViewById(R.id.lv_donors);
 

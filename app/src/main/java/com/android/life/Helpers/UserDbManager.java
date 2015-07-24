@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,6 +36,9 @@ public class UserDbManager extends SQLiteOpenHelper {
     private static final String KEY_BLOOD_GROUP = "blood_group";
     private static final String KEY_ADDRESS = "address";
     private static final String KEY_PHONE = "phone";
+    private static final String KEY_STATUS = "status";
+    private static final String KEY_CREATED = "created";
+    private static final String KEY_UPDATED = "updated";
 
     public UserDbManager(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -49,7 +53,10 @@ public class UserDbManager extends SQLiteOpenHelper {
                 + KEY_EMAIL + " TEXT,"
                 + KEY_BLOOD_GROUP + " TEXT,"
                 + KEY_ADDRESS + " TEXT,"
-                + KEY_PHONE + " TEXT" + ")";
+                + KEY_PHONE + " TEXT,"
+                + KEY_STATUS + " TEXT,"
+                + KEY_CREATED + " DATETIME,"
+                + KEY_UPDATED + " DATETIME )";
         db.execSQL(CREATE_USERS_TABLE);
     }
 
@@ -66,25 +73,53 @@ public class UserDbManager extends SQLiteOpenHelper {
      * All CRUD(Create, Read, Update, Delete) Operations
      */
 
-
     // Adding new contact
     public void addUser(User user) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_USER_ID, user.user_id);
-        values.put(KEY_NAME, user.name);
-        values.put(KEY_EMAIL, user.email);
-        values.put(KEY_BLOOD_GROUP, user.blood_group);
-        values.put(KEY_ADDRESS, user.address);
-        values.put(KEY_PHONE, user.phone);
+        values.put(KEY_USER_ID, user.getUserID());
+        values.put(KEY_NAME, user.getName());
+        values.put(KEY_EMAIL, user.getEmail());
+        values.put(KEY_BLOOD_GROUP, user.getBloodGroup());
+        values.put(KEY_ADDRESS, user.getAddress());
+        values.put(KEY_PHONE, user.getPhone());
+        values.put(KEY_STATUS, user.getStatus());
+        values.put(KEY_CREATED, user.getCreated());
+        values.put(KEY_UPDATED, user.getUpdated());
 
         // Inserting Row
         db.insert(TABLE_USERS, null, values);
         db.close(); // Closing database connection
     }
 
-    // Getting single contact
+    // Updating single user
+    public int updateUser(User user) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_NAME, user.getName());
+        values.put(KEY_EMAIL, user.getEmail());
+        values.put(KEY_BLOOD_GROUP, user.getBloodGroup());
+        values.put(KEY_ADDRESS, user.getAddress());
+        values.put(KEY_PHONE, user.getPhone());
+        values.put(KEY_STATUS, user.getStatus());
+        values.put(KEY_CREATED, user.getCreated());
+        values.put(KEY_UPDATED, user.getUpdated());
+        // updating row
+        return db.update(TABLE_USERS, values, KEY_USER_ID + " = ?",
+                new String[]{String.valueOf(user.getUserID())});
+    }
+
+    // Deleting single contact
+    public void deleteUser(User user) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_USERS, KEY_USER_ID + " = ?",
+                new String[]{String.valueOf(user.getUserID())});
+        db.close();
+    }
+
+    // Getting single user
     public User getUser(int user_id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -94,41 +129,56 @@ public class UserDbManager extends SQLiteOpenHelper {
 
         Cursor cursor = db.query(TABLE_USERS, null, KEY_USER_ID + "=?", new String[]{String.valueOf(user_id)}, null, null, null, null);
 
-        if (cursor != null)
-            cursor.moveToFirst();
-        /*
-        JSONObject userObject = new JSONObject();
-        try {
-            userObject.put("id", Integer.parseInt(cursor.getString(0)));
-            userObject.put("userId", Integer.parseInt(cursor.getString(1)));
-            userObject.put("name", cursor.getString(2));
-            userObject.put("email", cursor.getString(3));
-            userObject.put("bloodGroup", cursor.getString(4));
-            userObject.put("address", cursor.getString(5));
-            userObject.put("phone", cursor.getString(6));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        Log.d("User object: ", userObject.toString());
-        */
         User user = new User();
-        user.setUserID(Integer.parseInt(cursor.getString(1)));
-        user.setName(cursor.getString(2));
-        user.setEmail(cursor.getString(3));
-        user.setBloodGroup(cursor.getString(4));
-        user.setAddress(cursor.getString(5));
-        user.setPhone(cursor.getString(6));
 
+        if (cursor != null) {
+            cursor.moveToFirst();
+            user.setUserID(Integer.parseInt(cursor.getString(1)));
+            user.setName(cursor.getString(2));
+            user.setEmail(cursor.getString(3));
+            user.setBloodGroup(cursor.getString(4));
+            user.setAddress(cursor.getString(5));
+            user.setPhone(cursor.getString(6));
+            user.setStatus(cursor.getString(7));
+            user.setCreated(cursor.getString(8));
+            user.setUpdated(cursor.getString(9));
+        }
         db.close();
         // return user object
         return user;
+    }
+
+    // Get latest created date
+    public String getLatestCreatedDate(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT created FROM " + TABLE_USERS + " ORDER BY " + KEY_CREATED + " DESC LIMIT 1";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        String created = null;
+        if (cursor != null && cursor.moveToFirst()) {
+            created = cursor.getString(0);
+        }else{
+            created = "0000-00-00 00:00:00";
+        }
+        return created;
+    }
+
+    // Get latest created date
+    public String getLatestUpdatedDate(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT updated FROM " + TABLE_USERS + " ORDER BY " + KEY_UPDATED + " DESC LIMIT 1";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        String updated = null;
+        if (cursor != null && cursor.moveToFirst()) {
+            updated = cursor.getString(0);
+        }
+        return updated;
     }
 
     // Getting All Users
     public ArrayList<User> getAllUsers() {
         ArrayList<User> userList = new ArrayList<User>();
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_USERS;
+        String selectQuery = "SELECT  * FROM " + TABLE_USERS + " ORDER BY name ASC";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -143,6 +193,9 @@ public class UserDbManager extends SQLiteOpenHelper {
                 user.setBloodGroup(cursor.getString(4));
                 user.setAddress(cursor.getString(5));
                 user.setPhone(cursor.getString(6));
+                user.setStatus(cursor.getString(7));
+                user.setCreated(cursor.getString(8));
+                user.setUpdated(cursor.getString(9));
                 // Adding user to list
                 userList.add(user);
             } while (cursor.moveToNext());
@@ -152,40 +205,16 @@ public class UserDbManager extends SQLiteOpenHelper {
         return userList;
     }
 
-    // Updating single user
-    public int updateUser(User user) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(KEY_NAME, user.getName());
-        values.put(KEY_EMAIL, user.getEmail());
-        values.put(KEY_BLOOD_GROUP, user.getBloodGroup());
-        values.put(KEY_ADDRESS, user.getAddress());
-        values.put(KEY_PHONE, user.getPhone());
-
-        // updating row
-        return db.update(TABLE_USERS, values, KEY_USER_ID + " = ?",
-                new String[]{String.valueOf(user.getUserID())});
-    }
-
-    // Deleting single contact
-    public void deleteUser(User user) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_USERS, KEY_USER_ID + " = ?",
-                new String[]{String.valueOf(user.getUserID())});
-        db.close();
-    }
-
-
     // Getting users Count
     public int getUsersCount() {
         String countQuery = "SELECT  * FROM " + TABLE_USERS;
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
+        int count = cursor.getCount();
         cursor.close();
 
         // return count
-        return cursor.getCount();
+        return count;
     }
 
     // deletes all records
@@ -197,7 +226,7 @@ public class UserDbManager extends SQLiteOpenHelper {
 
 
     // insert data using transaction and prepared statement
-    public void addOrReplaceUser(JSONArray users) {
+    public void insertUsers(JSONArray users) {
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
@@ -208,19 +237,57 @@ public class UserDbManager extends SQLiteOpenHelper {
             try {
                 c = users.getJSONObject(i);
                 User newUser = new User(c);
-                int user_id = newUser.getUserID();
 
-                String sql = "INSERT OR REPLACE INTO " + TABLE_USERS + " ( " + KEY_USER_ID + ", " + KEY_NAME + ", " + KEY_EMAIL + ", " + KEY_BLOOD_GROUP + ", " + KEY_ADDRESS + ", " + KEY_PHONE + " ) " +
+                String insertSql = "INSERT INTO " + TABLE_USERS + " ( " + KEY_USER_ID + ", " + KEY_NAME + ", " + KEY_EMAIL + ", " + KEY_BLOOD_GROUP + ", " + KEY_ADDRESS + ", " + KEY_PHONE + ", " + KEY_STATUS + ", " + KEY_CREATED + ", " + KEY_UPDATED + " ) " +
                         "VALUES ( " +
-                        "COALESCE((select " + KEY_USER_ID + " from " + TABLE_USERS + " where " + KEY_USER_ID + " = "+user_id+"), "+user_id+"), " +
-                        "'" +newUser.getName() + "'," +
-                        "'" +newUser.getEmail() + "'," +
-                        "'" +newUser.getBloodGroup() + "'," +
-                        "'"+ newUser.getAddress() + "'," +
-                        "'"+ newUser.getPhone() + "'" +
+                        "'" + newUser.getUserID() + "'," +
+                        "'" + newUser.getName() + "'," +
+                        "'" + newUser.getEmail() + "'," +
+                        "'" + newUser.getBloodGroup() + "'," +
+                        "'" + newUser.getAddress() + "'," +
+                        "'" + newUser.getPhone() + "'," +
+                        "'" + newUser.getStatus() + "'," +
+                        "'" + newUser.getCreated() + "'," +
+                        "'" + newUser.getUpdated() + "'" +
                         ")";
-                //Log.d("Query", sql);
-                db.execSQL(sql);
+                Log.d("Action-Inser-Query: ", insertSql);
+                db.execSQL(insertSql);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+        db.close();
+    }
+
+    // insert data using transaction and prepared statement
+    public void updateUsers(JSONArray users) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+
+        for (int i = 0; i < users.length(); i++) {
+            JSONObject c = null;
+
+            try {
+                c = users.getJSONObject(i);
+                User newUser = new User(c);
+
+                String updateSql = "UPDATE " + TABLE_USERS + " SET " +
+                        KEY_NAME + "='"+ newUser.getName() +"', " +
+                        KEY_EMAIL + "='"+ newUser.getEmail() +"', " +
+                        KEY_BLOOD_GROUP + "='"+ newUser.getBloodGroup() +"', " +
+                        KEY_ADDRESS + "='"+ newUser.getAddress() +"', " +
+                        KEY_PHONE + "='"+ newUser.getPhone() +"', " +
+                        KEY_STATUS + "='"+ newUser.getStatus() +"', " +
+                        KEY_UPDATED + "='"+ newUser.getUpdated() +"' " +
+                        "WHERE " + KEY_USER_ID + "='"+ newUser.getUserID() +"'";
+
+                Log.d("Action-Update-Query: ", updateSql);
+                db.execSQL(updateSql);
 
             } catch (JSONException e) {
                 e.printStackTrace();
