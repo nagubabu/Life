@@ -94,7 +94,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/new_password"
-                android:imeOptions="actionNext"
+                android:imeOptions="actionDone|actionGo"
                 android:inputType="textPassword"
                 android:maxLines="1"
                 android:nextFocusDown="@+id/sp_blood_group"

@@ -18,7 +18,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.android.life.Helpers.ServiceHandler;
-import com.android.life.Helpers.User;
+import com.android.life.models.User;
 import com.android.life.Helpers.UserPreferenceManager;
 import com.android.life.R;
 import com.android.life.utils.NetworkUtil;
@@ -133,7 +133,7 @@ public class ProfileFragment extends Fragment {
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
-        return password.length() > 4;
+        return password.length() > 5;
     }
 
     public void attemptUpdateProfile() {
@@ -198,7 +198,8 @@ public class ProfileFragment extends Fragment {
 
                 postParams.add(new BasicNameValuePair("id", String.valueOf(userPrefs.getUserId())));
                 postParams.add(new BasicNameValuePair("name", name));
-                postParams.add(new BasicNameValuePair("passcode", nPassword));
+                postParams.add(new BasicNameValuePair("cpasscode", cPassword));
+                postParams.add(new BasicNameValuePair("npasscode", nPassword));
                 postParams.add(new BasicNameValuePair("blood_group", blood_group));
                 postParams.add(new BasicNameValuePair("contact", phone));
                 postParams.add(new BasicNameValuePair("address", address));
@@ -215,9 +216,12 @@ public class ProfileFragment extends Fragment {
      * Shows the progress
      */
     public void showProgress(final boolean show) {
-        if (show)
+        if (show) {
+            if (progressDialog != null) {
+                progressDialog = null;
+            }
             progressDialog = ProgressDialog.show(getActivity(), "", "Updating...");
-        else
+        }else
             progressDialog.dismiss();
     }
 
@@ -225,10 +229,12 @@ public class ProfileFragment extends Fragment {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    private class ProfileUpdateTask extends AsyncTask<Void, Void, Boolean> {
+    private class ProfileUpdateTask extends AsyncTask<Void, Void, String> {
+
+        String $error;
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected String doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
             // Creating service handler class instance
             ServiceHandler sh = new ServiceHandler();
@@ -244,30 +250,38 @@ public class ProfileFragment extends Fragment {
                     // Getting JSON Array node
                     registerResponse = jsonObj.getJSONObject(TAG_RESPONSE);
                     responeStatus = registerResponse.getString(TAG_STATUS);
+                    if(responeStatus.equals("fail"))
+                        $error = registerResponse.getString("message");
 
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    $error = e.getMessage();
                 }
             } else {
                 Log.e("ServiceHandler", "Couldn't get any data from the url");
             }
 
-            if (responeStatus.equals("success")) {
-                return true;
+            if ($error != null && !$error.isEmpty()) {
+                return $error;
+            } else if (responeStatus.equals("success")) {
+                return getResources().getString(R.string.success);
             } else
-                return false;
+                return getResources().getString(R.string.fail);
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final String resp) {
             updateTask = null;
 
-            if (success) {
+            if($error != null) {
+                Crouton.makeText(getActivity(), $error, Style.ALERT).show();
+            }else if (resp.equals(getResources().getString(R.string.success))) {
                 Crouton.makeText(getActivity(), getString(R.string.update_success), Style.CONFIRM).show();
-                //listener.gotoLoginFrag();
             } else {
                 Crouton.makeText(getActivity(), getString(R.string.update_failed), Style.ALERT).show();
             }
+            oldPass.setText("");
+            newPass.setText("");
             showProgress(false);
         }
 

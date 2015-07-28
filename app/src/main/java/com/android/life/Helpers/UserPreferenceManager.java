@@ -5,8 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import com.android.life.LoginActivity;
-
-import java.util.HashMap;
+import com.android.life.models.User;
 
 /**
  * Created by Nag on 6/18/15.

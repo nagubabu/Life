@@ -1,4 +1,4 @@
-package com.android.life.Helpers;
+package com.android.life.models;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,6 +14,7 @@ public class User {
     public String blood_group;
     public String address;
     public String phone;
+    public String image_url;
     public String status;
     public String created;
     public String updated;

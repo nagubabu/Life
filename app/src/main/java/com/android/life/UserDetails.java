@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.android.life.Helpers.User;
+import com.android.life.models.User;
 import com.android.life.Helpers.UserDbManager;
 
 /**

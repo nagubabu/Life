@@ -9,5 +9,6 @@
     <string name="no_data_from_server">No data received from Server</string>
     <string name="server_not_responding">Server not responding</string>
     <string name="success">Success</string>
+    <string name="fail">Fail</string>
     <string name="no_internet">No internet connection available</string>
 </resources>

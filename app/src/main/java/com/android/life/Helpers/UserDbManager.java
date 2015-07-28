@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.android.life.models.User;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -156,6 +158,7 @@ public class UserDbManager extends SQLiteOpenHelper {
         String created = null;
         if (cursor != null && cursor.moveToFirst()) {
             created = cursor.getString(0);
+            Log.d("Created:", cursor.getString(0));
         }else{
             created = "0000-00-00 00:00:00";
         }
