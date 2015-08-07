@@ -19,14 +19,23 @@
             android:focusableInTouchMode="true"
             android:orientation="vertical">
 
-            <TextView
+            <ImageView
+                android:id="@+id/imgv_profile"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="center"
+                android:scaleType="fitXY"
                 android:layout_marginBottom="@dimen/margin_large"
+                android:src="@drawable/profile_default" />
+            <!--
+            <TextView
                 android:layout_width="match_parent"
-                android:textSize="@dimen/font_large"
-                android:textColor="@android:color/holo_blue_light"
                 android:layout_height="wrap_content"
-                android:text="@string/account_details"/>
-
+                android:layout_marginBottom="@dimen/margin_large"
+                android:text="@string/account_details"
+                android:textColor="@android:color/holo_blue_light"
+                android:textSize="@dimen/font_large" />
+            -->
             <EditText
                 android:id="@+id/et_name"
                 android:layout_width="match_parent"
@@ -36,7 +45,7 @@
                 android:inputType="textCapSentences"
                 android:maxLines="1"
                 android:nextFocusDown="@+id/email"
-                android:textCursorDrawable="@null"/>
+                android:textCursorDrawable="@null" />
 
             <Spinner
                 android:id="@+id/sp_blood_group"
@@ -68,14 +77,15 @@
                 android:maxLines="1"
                 android:textCursorDrawable="@null" />
 
+
             <TextView
-                android:layout_marginTop="@dimen/margin_large"
-                android:layout_marginBottom="@dimen/margin_large"
                 android:layout_width="match_parent"
-                android:textSize="@dimen/font_large"
-                android:textColor="@android:color/holo_blue_light"
                 android:layout_height="wrap_content"
-                android:text="@string/change_password"/>
+                android:layout_marginBottom="@dimen/margin_large"
+                android:layout_marginTop="@dimen/margin_large"
+                android:text="@string/change_password"
+                android:textColor="@android:color/holo_blue_light"
+                android:textSize="@dimen/font_large" />
 
             <EditText
                 android:id="@+id/et_old_password"
@@ -107,8 +117,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin_large"
-                android:textSize="@dimen/font_medium"
                 android:text="@string/action_update_profile"
+                android:textSize="@dimen/font_medium"
                 android:textStyle="bold" />
 
         </LinearLayout>

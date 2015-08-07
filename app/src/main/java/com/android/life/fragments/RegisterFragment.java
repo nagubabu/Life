@@ -310,6 +310,12 @@ public class RegisterFragment extends Fragment implements View.OnClickListener {
 
             if (success) {
                 Crouton.makeText(getActivity(), getString(R.string.success_registration), Style.CONFIRM).show();
+                uName.setText("");
+                uEmail.setText("");
+                uPass.setText("");
+                ucPass.setText("");
+                uAddress.setText("");
+                uPhone.setText("");
                 listener.gotoLoginFrag();
             } else {
                 Crouton.makeText(getActivity(), getString(R.string.error_registration), Style.ALERT).show();

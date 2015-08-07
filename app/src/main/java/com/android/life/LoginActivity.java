@@ -20,18 +20,19 @@ import com.android.life.fragments.RegisterFragment;
 public class LoginActivity extends Activity implements LoginFragment.Listener, RegisterFragment.Listener, ProfileFragment.Listener {
 
     UserPreferenceManager userPrefs;
-    LoginFragment loginFragment;
-    RegisterFragment registerFragment;
-    ProfileFragment profileFragment;
+    private static final String LOGIN = "Login";
+    private static final String REGISTER = "Register";
+    private static final String PROFILE = "Profile";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        String fragmentToShow = "Login";
+        String fragmentToShow = LOGIN;
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             fragmentToShow = extras.getString("showFragment", "");
+            //getIntent().removeExtra("showFragment");
         }
 
         userPrefs = new UserPreferenceManager(this);
@@ -42,16 +43,12 @@ public class LoginActivity extends Activity implements LoginFragment.Listener, R
 
         setContentView(R.layout.activity_login);
 
-        loginFragment = new LoginFragment();
-        registerFragment = new RegisterFragment();
-        profileFragment = new ProfileFragment();
-
         // Add new fragment, loginFragment for the first time
 
-        if (fragmentToShow.equals("Profile")) {
-            addFragment(profileFragment);
+        if (fragmentToShow.equals(PROFILE)) {
+            addFragment(PROFILE);
         } else {
-            addFragment(loginFragment);
+            addFragment(LOGIN);
         }
 
     }
@@ -65,15 +62,29 @@ public class LoginActivity extends Activity implements LoginFragment.Listener, R
 
     @Override
     public void gotoRegisterFrag() {
-        replaceFragment(registerFragment);
+        replaceFragment(REGISTER);
     }
 
-    private void addFragment(Fragment fragment){
+    private void addFragment(String fragmentName){
+        Fragment fragment;
+        if(fragmentName.equals(PROFILE))
+            fragment = new ProfileFragment();
+        else
+            fragment = new LoginFragment();
+
+        //Log.d("Action: add ", fragment.toString());
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.add(R.id.fragment_holder, fragment);
         fragmentTransaction.commit();
     }
-    private void replaceFragment(Fragment fragment) {
+    private void replaceFragment(String fragmentName) {
+        Fragment fragment;
+        if(fragmentName.equals(REGISTER))
+            fragment = new RegisterFragment();
+        else
+            fragment = new LoginFragment();
+
+        Log.d("Action: replace ", fragment.toString());
         /*
         String backStateName = fragment.getClass().getName();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
@@ -94,13 +105,13 @@ public class LoginActivity extends Activity implements LoginFragment.Listener, R
             ft.addToBackStack(backStateName);
             ft.commit();
         } else {
-            Toast.makeText(getApplicationContext(), fragmentTag + " is already in backstack", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), fragmentTag + " is already in backstack", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void gotoLoginFrag() {
-        replaceFragment(loginFragment);
+        replaceFragment(LOGIN);
     }
 }
 
