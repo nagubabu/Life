@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/darker_gray"
+    android:layout_marginBottom="@dimen/margin_large"
     android:orientation="horizontal"
     android:padding="@dimen/padding_tiny">
 
@@ -20,14 +20,7 @@
             android:scaleType="fitXY"
             android:src="@drawable/profile_default" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/imgv_profile"
-            android:layout_centerInParent="true"
-            android:layout_margin="@dimen/margin_tiny"
-            android:text="Nagubabu"
-            android:textColor="@android:color/white" />
+
 
     </RelativeLayout>
 
@@ -37,20 +30,31 @@
         android:layout_marginLeft="@dimen/padding_tiny">
 
         <TextView
+            android:id="@+id/tv_userName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:text="Nag"
+            android:textColor="@android:color/black" />
+
+        <TextView
             android:id="@+id/tv_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="30-07-2015 10:15 am"
+            android:gravity="right"
+            android:layout_toRightOf="@+id/tv_userName"
+            android:text="Date"
             android:textColor="@android:color/white"
             android:textSize="@dimen/font_small" />
 
         <TextView
-            android:id="@+id/tv_text"
+            android:id="@+id/tv_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_date"
-            android:layout_marginTop="@dimen/padding_medium"
-            android:text="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa."
+            android:layout_marginTop="@dimen/padding_tiny"
+            android:maxLines="3"
+            android:text="Message"
             android:textColor="@android:color/white"
             android:textSize="@dimen/font_small" />
 

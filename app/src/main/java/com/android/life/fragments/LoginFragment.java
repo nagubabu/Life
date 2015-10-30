@@ -21,7 +21,7 @@ import android.widget.TextView;
 import com.android.life.utils.NetworkUtil;
 import com.android.life.Helpers.ServiceHandler;
 import com.android.life.Helpers.UserPreferenceManager;
-import com.android.life.MainActivity;
+import com.android.life.MembersActivity;
 import com.android.life.R;
 
 import org.apache.http.NameValuePair;
@@ -291,7 +291,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     }
 
     private void gotoHome() {
-        Intent intent = new Intent(getActivity(), MainActivity.class);
+        Intent intent = new Intent(getActivity(), MembersActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }

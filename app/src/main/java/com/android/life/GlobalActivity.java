@@ -77,6 +77,9 @@ public class GlobalActivity extends ActionBarActivity {
             case R.id.action_profile:
                 gotoProfileFrag();
                 return true;
+            case R.id.action_members:
+                gotoMembersActivity();
+                return true;
             case R.id.action_logout:
                 appLogout();
                 return true;
@@ -88,6 +91,11 @@ public class GlobalActivity extends ActionBarActivity {
     private void gotoProfileFrag() {
         Intent intent = new Intent(this, LoginActivity.class);
         intent.putExtra("showFragment","Profile");
+        startActivity(intent);
+    }
+
+    private void gotoMembersActivity() {
+        Intent intent = new Intent(this, MembersActivity.class);
         startActivity(intent);
     }
 

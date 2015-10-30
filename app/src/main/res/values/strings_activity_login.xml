@@ -1,6 +1,7 @@
 <resources>
     <string name="title_activity_login">Sign in</string>
     <string name="title_activity_user_details">Member Info</string>
+    <string name="title_activity_wall_posts">Public Wall</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>

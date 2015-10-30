@@ -24,8 +24,8 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_gravity="center"
-                android:scaleType="fitXY"
                 android:layout_marginBottom="@dimen/margin_large"
+                android:scaleType="fitXY"
                 android:src="@drawable/profile_default" />
             <!--
             <TextView
@@ -52,7 +52,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:entries="@array/blood_groups"
-                android:prompt="@string/choose_blood" />
+                android:prompt="@string/choose_blood"
+                android:spinnerMode="dialog" />
 
             <EditText
                 android:id="@+id/et_address"

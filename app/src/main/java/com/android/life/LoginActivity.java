@@ -7,7 +7,6 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.life.Helpers.UserPreferenceManager;
 import com.android.life.fragments.LoginFragment;
@@ -44,17 +43,19 @@ public class LoginActivity extends Activity implements LoginFragment.Listener, R
         setContentView(R.layout.activity_login);
 
         // Add new fragment, loginFragment for the first time
+        if (savedInstanceState == null) {
 
-        if (fragmentToShow.equals(PROFILE)) {
-            addFragment(PROFILE);
-        } else {
-            addFragment(LOGIN);
+            if (fragmentToShow.equals(PROFILE)) {
+                addFragment(PROFILE);
+            } else {
+                addFragment(LOGIN);
+            }
         }
 
     }
 
     private void gotoHome() {
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, MembersActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }
@@ -65,9 +66,9 @@ public class LoginActivity extends Activity implements LoginFragment.Listener, R
         replaceFragment(REGISTER);
     }
 
-    private void addFragment(String fragmentName){
+    private void addFragment(String fragmentName) {
         Fragment fragment;
-        if(fragmentName.equals(PROFILE))
+        if (fragmentName.equals(PROFILE))
             fragment = new ProfileFragment();
         else
             fragment = new LoginFragment();
@@ -77,9 +78,10 @@ public class LoginActivity extends Activity implements LoginFragment.Listener, R
         fragmentTransaction.add(R.id.fragment_holder, fragment);
         fragmentTransaction.commit();
     }
+
     private void replaceFragment(String fragmentName) {
         Fragment fragment;
-        if(fragmentName.equals(REGISTER))
+        if (fragmentName.equals(REGISTER))
             fragment = new RegisterFragment();
         else
             fragment = new LoginFragment();

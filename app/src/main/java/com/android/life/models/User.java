@@ -139,6 +139,7 @@ public class User {
     public String getCreated(){
         return this.created;
     }
+
     public void setUpdated(String updated){
         this.updated = updated;
     }

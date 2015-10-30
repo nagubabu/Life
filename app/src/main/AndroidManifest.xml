@@ -25,7 +25,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".MembersActivity"
             android:label="@string/app_name">
         </activity>
         <activity
@@ -35,6 +35,9 @@
         <activity
             android:name=".UserDetails"
             android:label="@string/title_activity_user_details"></activity>
+        <activity
+            android:name=".WallPostActivity"
+            android:label="@string/title_activity_wall_posts"></activity>
     </application>
 
 </manifest>

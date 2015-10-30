@@ -30,9 +30,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class MainActivity extends GlobalActivity {
+public class MembersActivity extends GlobalActivity {
 
     UserPreferenceManager userPrefs;
     UserDbManager userDbManager;
@@ -46,7 +45,7 @@ public class MainActivity extends GlobalActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_members);
 
         userPrefs = new UserPreferenceManager(this);
         mProgressView = findViewById(R.id.login_progress);
@@ -108,8 +107,7 @@ public class MainActivity extends GlobalActivity {
                 TextView userIdTv = (TextView) clickedItem.findViewById(R.id.tv_userId);
                 //String userName = dnrTv.getText().toString();
                 String userId = userIdTv.getText().toString();
-                //Crouton.makeText(MainActivity.this, "#" + userId + " " + userName, Style.INFO).show();
-                Intent intent = new Intent(MainActivity.this, UserDetails.class);
+                Intent intent = new Intent(MembersActivity.this, UserDetails.class);
                 intent.putExtra("USER_ID", userId);
                 startActivity(intent);
             }
@@ -139,7 +137,7 @@ public class MainActivity extends GlobalActivity {
                     nameValuePair.add(new BasicNameValuePair("tag", "created"));
 
                     // Making a request to url and getting response
-                    String latestNewUsersJsonStr = sh.makeServiceCall(MainActivity.url, ServiceHandler.GET, nameValuePair);
+                    String latestNewUsersJsonStr = sh.makeServiceCall(MembersActivity.url, ServiceHandler.GET, nameValuePair);
                     Log.d("Response: ", "Created-call-response > " + latestNewUsersJsonStr);
                     if (latestNewUsersJsonStr != null) {
                         try {
@@ -173,7 +171,7 @@ public class MainActivity extends GlobalActivity {
                     nameValuePair.add(new BasicNameValuePair("tag", "updated"));
 
                     // Making a request to url and getting response
-                    String latestUpdatedUsersJsonStr = sh.makeServiceCall(MainActivity.url, ServiceHandler.GET, nameValuePair);
+                    String latestUpdatedUsersJsonStr = sh.makeServiceCall(MembersActivity.url, ServiceHandler.GET, nameValuePair);
                     Log.d("Response: ", "Updated-call-response > " + latestUpdatedUsersJsonStr);
                     if (latestUpdatedUsersJsonStr != null) {
                         try {
@@ -227,7 +225,6 @@ public class MainActivity extends GlobalActivity {
             if (resp.equals(getResources().getString(R.string.success))) {
                 displayTheList();
             }
-            //else Crouton.makeText(MainActivity.this, resp, Style.ALERT).show();
         }
 
         @Override

@@ -42,11 +42,16 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.HttpCookie;
 import java.util.ArrayList;
 
 import de.keyboardsurfer.android.widget.crouton.Crouton;
@@ -334,15 +339,14 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int item) {
                 if (items[item].equals("Take Photo")) {
-                    clickpic();
+                    takePhoto();
                 } else if (items[item].equals("Choose from Library")) {
-                    Intent intent = new Intent(
-                            Intent.ACTION_PICK,
-                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    /*
+                    Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     intent.setType("image/*");
-                    startActivityForResult(
-                            Intent.createChooser(intent, "Select File"),
-                            1);
+                    startActivityForResult(Intent.createChooser(intent, "Select File"), 1);
+                    */
+                    pickPhoto();
                 } else if (items[item].equals("Cancel")) {
                     dialog.dismiss();
                 }
@@ -351,10 +355,9 @@ public class ProfileFragment extends Fragment {
         builder.show();
     }
 
-    private void clickpic() {
+    private void takePhoto() {
         // Check Camera
-        if (getActivity().getApplicationContext().getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_CAMERA)) {
+        if (getActivity().getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             // Open default camera
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
@@ -367,15 +370,22 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    private void pickPhoto() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent,
+                "Select Picture"), 100);
+
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 100 && resultCode == getActivity().RESULT_OK) {
 
             selectedImage = data.getData();
-            photo = (Bitmap) data.getExtras().get("data");
 
             // Cursor to get image uri to display
-
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
             Cursor cursor = getActivity().getContentResolver().query(selectedImage,
                     filePathColumn, null, null, null);
@@ -386,103 +396,75 @@ public class ProfileFragment extends Fragment {
             cursor.close();
 
             //Bitmap photo = decodeFile(picturePath);
+            //Bitmap photo = (Bitmap) data.getExtras().get("data");
 
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            profilePic.setImageBitmap(BitmapFactory.decodeFile(picturePath));
             profilePic.setImageBitmap(photo);
-            upload();
+            new uploadImage(photo).execute();
         }
     }
 
 
-    /**
-     * The method decodes the image file to avoid out of memory issues. Sets the
-     * selected image in to the ImageView.
-     *
-     * @param filePath
-     */
+    private class uploadImage extends AsyncTask<Void, Void, Void>{
 
-    public Bitmap decodeFile(String filePath) {
-        // Decode image size
-        BitmapFactory.Options o = new BitmapFactory.Options();
-        o.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(filePath, o);
-
-        // The new size we want to scale to
-        final int REQUIRED_SIZE = 1024;
-
-        // Find the correct scale value. It should be the power of 2.
-        int width_tmp = o.outWidth, height_tmp = o.outHeight;
-        int scale = 1;
-        while (true) {
-            if (width_tmp < REQUIRED_SIZE && height_tmp < REQUIRED_SIZE)
-                break;
-            width_tmp /= 2;
-            height_tmp /= 2;
-            scale *= 2;
-        }
-
-        // Decode with inSampleSize
-        BitmapFactory.Options o2 = new BitmapFactory.Options();
-        o2.inSampleSize = scale;
-        Bitmap bitmap = BitmapFactory.decodeFile(filePath, o2);
-        return bitmap;
-    }
-
-    private void upload() {
-        // Image location URL
-        Log.d("picturePath: ", picturePath);
-
-        // Image
-        Bitmap bm = BitmapFactory.decodeFile(picturePath);
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, 90, bao);
-        byte[] ba = bao.toByteArray();
-        int flag = 0;
-        ba1 = Base64.encodeToString(ba, flag);
-
-        Log.d("base64", "-----" + ba1);
-
-
-        // Upload image to server
-        new uploadToServer().execute();
-
-    }
-
-    public class uploadToServer extends AsyncTask<Void, Void, String> {
+        String imageName = String.valueOf(System.currentTimeMillis());
+        Bitmap image;
+        String taskResponse = "...";
 
         private ProgressDialog pd = new ProgressDialog(getActivity());
+
         protected void onPreExecute() {
             super.onPreExecute();
-            pd.setMessage("Wait image uploading!");
+            pd.setMessage("Wait, image uploading...");
             pd.show();
         }
 
+        public uploadImage(Bitmap image){
+            this.image = image;
+        }
         @Override
-        protected String doInBackground(Void... params) {
+        protected Void doInBackground(Void... params) {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            String encodedImage = Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.DEFAULT);
 
-            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-            nameValuePairs.add(new BasicNameValuePair("base64", ba1));
-            nameValuePairs.add(new BasicNameValuePair("ImageName", System.currentTimeMillis() + ".jpg"));
+            ArrayList dataToSend = new ArrayList();
+            dataToSend.add(new BasicNameValuePair("imgName", imageName));
+            dataToSend.add(new BasicNameValuePair("image", encodedImage));
+
+            HttpParams httpParams = getHttpParams();
+            HttpClient client = new DefaultHttpClient(httpParams);
+            HttpPost post = new HttpPost(UPLOAD_URL);
             try {
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(UPLOAD_URL);
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-                HttpResponse response = httpclient.execute(httppost);
+                post.setEntity(new UrlEncodedFormEntity(dataToSend));
+                HttpResponse response = client.execute(post);
                 String st = EntityUtils.toString(response.getEntity());
-                Log.d("log_tag", "In the try Loop" + st);
-
-
-            } catch (Exception e) {
-                Log.d("log_tag", "Error in http connection " + e.toString());
+                Log.d("Response", "In the try Loop" + st);
+                if(st.equals("success"))
+                    taskResponse = "Uploaded successfully";
+                else
+                    taskResponse = "Uploading failed";
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d("log_tag", e.getMessage());
+                taskResponse = "Uploading error";
             }
-            return "Success";
-
+            return null;
         }
 
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
             pd.hide();
             pd.dismiss();
+            Crouton.makeText(getActivity(), taskResponse, Style.CONFIRM).show();
         }
+    }
+
+    private HttpParams getHttpParams(){
+        HttpParams httpParameters = new BasicHttpParams();
+        HttpConnectionParams.setConnectionTimeout(httpParameters, 1000*30);
+        HttpConnectionParams.setSoTimeout(httpParameters, 1000 * 30);
+        return httpParameters;
     }
 }
