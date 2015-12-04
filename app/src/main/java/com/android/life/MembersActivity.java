@@ -51,19 +51,30 @@ public class MembersActivity extends GlobalActivity {
         mProgressView = findViewById(R.id.login_progress);
 
         userDbManager = new UserDbManager(getApplicationContext());
-
-        populateListView();
-        registerClickCallback();
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return super.onCreateOptionsMenu(menu);
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_members);
+        item.setVisible(false);
+        return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if(userPrefs.isUserLoggedIn()){
+            populateListView();
+            registerClickCallback();
+        }else{
+            checkLoginStatus();
+        }
     }
 
     /**

@@ -8,9 +8,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.android.life.Application;
 import com.android.life.R;
 import com.android.life.models.User;
 import com.android.life.models.WallPost;
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,6 +26,8 @@ import java.util.Date;
 public class WallPostAdapter extends ArrayAdapter<WallPost> {
 
     UserDbManager userDbManager;
+    ImageLoader imageLoader = Application.getInstance().getImageLoader();
+    private static final String imagePath = "http://medi.orgfree.com/profile_pics/";
 
     public WallPostAdapter(Context context, ArrayList<WallPost> wallPosts) {
         super(context, 0, wallPosts);
@@ -41,16 +46,23 @@ public class WallPostAdapter extends ArrayAdapter<WallPost> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_post, parent, false);
         }
 
+        if (imageLoader == null)
+            imageLoader = Application.getInstance().getImageLoader();
+
+        NetworkImageView thumbNail = (NetworkImageView) convertView.findViewById(R.id.imgv_profile);
+
         // Lookup view for data population
         TextView tvUserName = (TextView) convertView.findViewById(R.id.tv_userName);
         TextView tvDate = (TextView) convertView.findViewById(R.id.tv_date);
         TextView tvMessage = (TextView) convertView.findViewById(R.id.tv_message);
 
-        User user = userDbManager.getUser(wallPost.getUserID());
+        thumbNail.setImageUrl(imagePath.concat(wallPost.getProfile_pic()), imageLoader);
+        thumbNail.setDefaultImageResId(R.drawable.default_avatar);
+        thumbNail.setErrorImageResId(R.drawable.default_avatar);
 
 
         // Populate the data into the template view using the data object
-        tvUserName.setText(user.getName());
+        tvUserName.setText(wallPost.getName());
         tvUserName.setTextColor(Color.BLACK);
 
         tvDate.setText(parseDateToddMMyyyy(wallPost.getPostedOn()));

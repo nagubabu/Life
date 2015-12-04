@@ -14,7 +14,7 @@ public class User {
     public String blood_group;
     public String address;
     public String phone;
-    public String image_url;
+    public String profile_pic;
     public String status;
     public String created;
     public String updated;
@@ -46,6 +46,9 @@ public class User {
 
             if (object.has("contact"))
                 this.phone = object.getString("contact");
+
+            if (object.has("profile_pic"))
+                this.profile_pic = object.getString("profile_pic");
 
             if (object.has("status"))
                 this.status = object.getString("status");
@@ -122,6 +125,14 @@ public class User {
 
     public String getPhone(){
         return this.phone;
+    }
+
+    public String getProfile_pic(){
+        return this.profile_pic;
+    }
+
+    public void setProfile_pic(String profile_pic){
+        this.profile_pic = profile_pic;
     }
 
     public void setStatus(String status){

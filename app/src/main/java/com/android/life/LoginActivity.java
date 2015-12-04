@@ -45,8 +45,8 @@ public class LoginActivity extends Activity implements LoginFragment.Listener, R
         // Add new fragment, loginFragment for the first time
         if (savedInstanceState == null) {
 
-            if (fragmentToShow.equals(PROFILE)) {
-                addFragment(PROFILE);
+            if (fragmentToShow.equals(PROFILE) && userPrefs.isUserLoggedIn()) {
+                    addFragment(PROFILE);
             } else {
                 addFragment(LOGIN);
             }

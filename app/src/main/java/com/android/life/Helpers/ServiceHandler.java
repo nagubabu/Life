@@ -49,7 +49,7 @@ public class ServiceHandler {
                                   List<NameValuePair> params) {
         try {
             // http client
-            DefaultHttpClient httpClient = Application.httpClient;
+            DefaultHttpClient httpClient = Application.getHttpClient();
             HttpEntity httpEntity = null;
             HttpResponse httpResponse = null;
 

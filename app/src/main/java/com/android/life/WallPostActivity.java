@@ -54,14 +54,14 @@ public class WallPostActivity extends GlobalActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return super.onCreateOptionsMenu(menu);
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem item = menu.findItem(R.id.action_wall_posts);
+        item.setVisible(false);
+        return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
+
 
     private void populateListView() {
         //displayTheList();
@@ -82,7 +82,7 @@ public class WallPostActivity extends GlobalActivity {
 
                 // Making a request to url and getting response
                 String latestWallPostsJsonStr = sh.makeServiceCall(WallPostActivity.URL, ServiceHandler.GET);
-                Log.d("Response: ", latestWallPostsJsonStr);
+                //Log.d("Response: ", latestWallPostsJsonStr);
 
                 if (latestWallPostsJsonStr != null) {
                     try {
@@ -104,6 +104,8 @@ public class WallPostActivity extends GlobalActivity {
                     }
                 }
 
+            }else{
+                $error = getResources().getString(R.string.no_internet);
             }
 
             if ($error != null && !$error.isEmpty()) {

@@ -65,6 +65,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     private static final String TAG_BLOOD_GROUP = "bloodGroup";
     private static final String TAG_ADDRESS = "address";
     private static final String TAG_PHONE = "contact";
+    private static final String TAG_PROFILE_PIC = "profile_pic";
 
     public interface Listener {
         public void gotoRegisterFrag();
@@ -231,6 +232,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
             String userBloodGroup = null;
             String userAddress = null;
             String userContact = null;
+            String userProfilePic = null;
 
             // Creating service handler class instance
             ServiceHandler sh = new ServiceHandler();
@@ -254,6 +256,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                     userBloodGroup = loginResponse.getString(TAG_BLOOD_GROUP);
                     userAddress = loginResponse.getString(TAG_ADDRESS);
                     userContact = loginResponse.getString(TAG_PHONE);
+                    userProfilePic = loginResponse.getString(TAG_PROFILE_PIC);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -262,8 +265,8 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                 Log.e("ServiceHandler", "Couldn't get any data from the url");
             }
 
-            if (responeStatus.equals("success")) {
-                userPrefs.createUserSession(userId, userName, userEmail, userBloodGroup, userAddress, userContact);
+            if (responeStatus != null && responeStatus.equals("success")) {
+                userPrefs.createUserSession(userId, userName, userEmail, userBloodGroup, userAddress, userContact, userProfilePic);
                 return true;
             } else
                 return false;

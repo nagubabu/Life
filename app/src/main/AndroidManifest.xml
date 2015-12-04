@@ -38,6 +38,9 @@
         <activity
             android:name=".WallPostActivity"
             android:label="@string/title_activity_wall_posts"></activity>
+        <activity
+            android:name=".NewPostActivity"
+            android:label="@string/title_activity_new_post"></activity>
     </application>
 
 </manifest>

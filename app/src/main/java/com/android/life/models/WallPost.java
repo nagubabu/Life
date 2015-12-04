@@ -9,7 +9,9 @@ import org.json.JSONObject;
 public class WallPost {
 
     public int user_id;
+    public String name;
     public String message;
+    public String profile_pic;
     public String status;
     public String posted_on;
 
@@ -19,11 +21,17 @@ public class WallPost {
 
             try {
 
-                if (object.has("userId"))
-                    this.user_id = object.getInt("userId");
+                if (object.has("user_id"))
+                    this.user_id = object.getInt("user_id");
+
+                if (object.has("name"))
+                    this.name = object.getString("name");
 
                 if (object.has("message"))
                     this.message = object.getString("message");
+
+                if (object.has("profile_pic"))
+                    this.profile_pic = object.getString("profile_pic");
 
                 if (object.has("status"))
                     this.status = object.getString("status");
@@ -44,12 +52,28 @@ public class WallPost {
         return this.user_id;
     }
 
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public String getName(){
+        return this.name;
+    }
+
     public void setMessage(String message){
         this.message = message;
     }
 
     public String getMessage(){
         return this.message;
+    }
+
+    public String getProfile_pic(){
+        return this.profile_pic;
+    }
+
+    public void setProfile_pic(String profile_pic){
+        this.profile_pic = profile_pic;
     }
 
     public void setStatus(String status){

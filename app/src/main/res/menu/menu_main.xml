@@ -8,6 +8,12 @@
     <item android:id="@+id/action_members" android:title="@string/action_members"
         android:orderInCategory="101" app:showAsAction="never" />
 
+    <item android:id="@+id/action_wall_posts" android:title="@string/action_wall_posts"
+        android:orderInCategory="101" app:showAsAction="never" />
+
+    <item android:id="@+id/action_new_post" android:title="@string/action_new_post"
+        android:orderInCategory="101" app:showAsAction="never" />
+
     <item android:id="@+id/action_logout" android:title="@string/action_logout"
         android:orderInCategory="102" app:showAsAction="never" />
 </menu>

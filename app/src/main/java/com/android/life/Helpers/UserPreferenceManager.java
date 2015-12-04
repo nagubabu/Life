@@ -35,6 +35,7 @@ public class UserPreferenceManager {
     public static final String KEY_BLOOD_GROUP = "userBloodGroup";
     public static final String KEY_ADDRESS = "userAddress";
     public static final String KEY_PHONE = "userPhone";
+    public static final String KEY_PROFILE_PIC = "userProfilePic";
 
     public UserPreferenceManager(Context context){
         this._context = context;
@@ -43,7 +44,7 @@ public class UserPreferenceManager {
     }
 
     //Create login session
-    public void createUserSession(int id, String name, String email, String bloodGroup, String address, String phone){
+    public void createUserSession(int id, String name, String email, String bloodGroup, String address, String phone, String profilePic){
         // Storing login value as TRUE
         editor.putBoolean(IS_USER_LOGIN, true);
         editor.putInt(KEY_USER_ID, id);
@@ -52,8 +53,15 @@ public class UserPreferenceManager {
         editor.putString(KEY_BLOOD_GROUP, bloodGroup);
         editor.putString(KEY_ADDRESS, address);
         editor.putString(KEY_PHONE, phone);
+        editor.putString(KEY_PROFILE_PIC, profilePic);
 
         // commit changes
+        editor.commit();
+    }
+
+    //Update profile pic
+    public void updateProfilePic(String profilePic){
+        editor.putString(KEY_PROFILE_PIC, profilePic);
         editor.commit();
     }
 
@@ -98,6 +106,7 @@ public class UserPreferenceManager {
         user.setBloodGroup(pref.getString(KEY_BLOOD_GROUP, null));
         user.setAddress(pref.getString(KEY_ADDRESS, null));
         user.setPhone(pref.getString(KEY_PHONE, null));
+        user.setProfile_pic(pref.getString(KEY_PROFILE_PIC, null));
 
         // return user
         return user;

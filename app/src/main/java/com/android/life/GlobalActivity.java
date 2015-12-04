@@ -8,6 +8,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -57,8 +58,8 @@ public class GlobalActivity extends ActionBarActivity {
         userPreferenceManager = new UserPreferenceManager(this);
     }
 
-    private void checkLoginStatus() {
-        if(userPreferenceManager.checkLogin()){
+    public void checkLoginStatus() {
+        if (userPreferenceManager.checkLogin()) {
             finish();
         }
     }
@@ -67,6 +68,16 @@ public class GlobalActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_logout);
+        Log.d("Status", userPreferenceManager.isUserLoggedIn() + "");
+        if (!userPreferenceManager.isUserLoggedIn()) {
+            item.setTitle("Login");
+        }
         return true;
     }
 
@@ -80,6 +91,12 @@ public class GlobalActivity extends ActionBarActivity {
             case R.id.action_members:
                 gotoMembersActivity();
                 return true;
+            case R.id.action_wall_posts:
+                gotoWallPostActivity();
+                return true;
+            case R.id.action_new_post:
+                gotoNewPostActivity();
+                return true;
             case R.id.action_logout:
                 appLogout();
                 return true;
@@ -88,9 +105,18 @@ public class GlobalActivity extends ActionBarActivity {
         }
     }
 
+    private void gotoWallPostActivity() {
+        Intent intent = new Intent(this, WallPostActivity.class);
+        startActivity(intent);
+    }
+
+    private void gotoNewPostActivity(){
+        Intent intent = new Intent(this, NewPostActivity.class);
+        startActivity(intent);
+    }
     private void gotoProfileFrag() {
         Intent intent = new Intent(this, LoginActivity.class);
-        intent.putExtra("showFragment","Profile");
+        intent.putExtra("showFragment", "Profile");
         startActivity(intent);
     }
 
@@ -101,6 +127,7 @@ public class GlobalActivity extends ActionBarActivity {
 
     private void appLogout() {
         userPreferenceManager.logoutUser();
+        finish();
     }
 
     @Override
@@ -118,13 +145,15 @@ public class GlobalActivity extends ActionBarActivity {
 
     @Override
     protected void onResume() {
+        //Log.d("Action: ","Global-onResume");
         registerReceiver(networkUpdateReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
         super.onResume();
-        checkLoginStatus();
+        //checkLoginStatus();
     }
 
     @Override
     protected void onDestroy() {
+        //Log.d("Action: ","Global-onDestroy");
         unregisterReceiver(networkUpdateReceiver);
         Crouton.cancelAllCroutons();
         super.onDestroy();

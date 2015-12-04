@@ -38,6 +38,7 @@ public class UserDbManager extends SQLiteOpenHelper {
     private static final String KEY_BLOOD_GROUP = "blood_group";
     private static final String KEY_ADDRESS = "address";
     private static final String KEY_PHONE = "phone";
+    private static final String KEY_PROFILE_PIC = "profile_pic";
     private static final String KEY_STATUS = "status";
     private static final String KEY_CREATED = "created";
     private static final String KEY_UPDATED = "updated";
@@ -56,6 +57,7 @@ public class UserDbManager extends SQLiteOpenHelper {
                 + KEY_BLOOD_GROUP + " TEXT,"
                 + KEY_ADDRESS + " TEXT,"
                 + KEY_PHONE + " TEXT,"
+                + KEY_PROFILE_PIC + " TEXT,"
                 + KEY_STATUS + " TEXT,"
                 + KEY_CREATED + " DATETIME,"
                 + KEY_UPDATED + " DATETIME )";
@@ -86,6 +88,7 @@ public class UserDbManager extends SQLiteOpenHelper {
         values.put(KEY_BLOOD_GROUP, user.getBloodGroup());
         values.put(KEY_ADDRESS, user.getAddress());
         values.put(KEY_PHONE, user.getPhone());
+        values.put(KEY_PROFILE_PIC, user.getProfile_pic());
         values.put(KEY_STATUS, user.getStatus());
         values.put(KEY_CREATED, user.getCreated());
         values.put(KEY_UPDATED, user.getUpdated());
@@ -141,9 +144,10 @@ public class UserDbManager extends SQLiteOpenHelper {
             user.setBloodGroup(cursor.getString(4));
             user.setAddress(cursor.getString(5));
             user.setPhone(cursor.getString(6));
-            user.setStatus(cursor.getString(7));
-            user.setCreated(cursor.getString(8));
-            user.setUpdated(cursor.getString(9));
+            user.setProfile_pic(cursor.getString(7));
+            user.setStatus(cursor.getString(8));
+            user.setCreated(cursor.getString(9));
+            user.setUpdated(cursor.getString(10));
         }
         db.close();
         // return user object
@@ -196,9 +200,10 @@ public class UserDbManager extends SQLiteOpenHelper {
                 user.setBloodGroup(cursor.getString(4));
                 user.setAddress(cursor.getString(5));
                 user.setPhone(cursor.getString(6));
-                user.setStatus(cursor.getString(7));
-                user.setCreated(cursor.getString(8));
-                user.setUpdated(cursor.getString(9));
+                user.setProfile_pic(cursor.getString(7));
+                user.setStatus(cursor.getString(8));
+                user.setCreated(cursor.getString(9));
+                user.setUpdated(cursor.getString(10));
                 // Adding user to list
                 userList.add(user);
             } while (cursor.moveToNext());
@@ -241,7 +246,7 @@ public class UserDbManager extends SQLiteOpenHelper {
                 c = users.getJSONObject(i);
                 User newUser = new User(c);
 
-                String insertSql = "INSERT INTO " + TABLE_USERS + " ( " + KEY_USER_ID + ", " + KEY_NAME + ", " + KEY_EMAIL + ", " + KEY_BLOOD_GROUP + ", " + KEY_ADDRESS + ", " + KEY_PHONE + ", " + KEY_STATUS + ", " + KEY_CREATED + ", " + KEY_UPDATED + " ) " +
+                String insertSql = "INSERT INTO " + TABLE_USERS + " ( " + KEY_USER_ID + ", " + KEY_NAME + ", " + KEY_EMAIL + ", " + KEY_BLOOD_GROUP + ", " + KEY_ADDRESS + ", " + KEY_PHONE + ", " + KEY_PROFILE_PIC + ", " + KEY_STATUS + ", " + KEY_CREATED + ", " + KEY_UPDATED + " ) " +
                         "VALUES ( " +
                         "'" + newUser.getUserID() + "'," +
                         "'" + newUser.getName() + "'," +
@@ -249,6 +254,7 @@ public class UserDbManager extends SQLiteOpenHelper {
                         "'" + newUser.getBloodGroup() + "'," +
                         "'" + newUser.getAddress() + "'," +
                         "'" + newUser.getPhone() + "'," +
+                        "'" + newUser.getProfile_pic() + "'," +
                         "'" + newUser.getStatus() + "'," +
                         "'" + newUser.getCreated() + "'," +
                         "'" + newUser.getUpdated() + "'" +
@@ -285,6 +291,7 @@ public class UserDbManager extends SQLiteOpenHelper {
                         KEY_BLOOD_GROUP + "='"+ newUser.getBloodGroup() +"', " +
                         KEY_ADDRESS + "='"+ newUser.getAddress() +"', " +
                         KEY_PHONE + "='"+ newUser.getPhone() +"', " +
+                        KEY_PROFILE_PIC + "='"+ newUser.getProfile_pic() +"', " +
                         KEY_STATUS + "='"+ newUser.getStatus() +"', " +
                         KEY_UPDATED + "='"+ newUser.getUpdated() +"' " +
                         "WHERE " + KEY_USER_ID + "='"+ newUser.getUserID() +"'";
